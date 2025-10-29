@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Database Schema
 
-## Getting Started
+## users
+| Column       | Type         | Constraints               | Description               |
+| ------------ | ------------ | ------------------------- | ------------------------- |
+| `id`         | UUID / INT   | PK                        | Unique user ID            |
+| `name`       | VARCHAR(100) | NOT NULL                  | Full name of the user     |
+| `email`      | VARCHAR(255) | UNIQUE, NOT NULL          | User’s email address      |
+| `created_at` | TIMESTAMP    | DEFAULT CURRENT_TIMESTAMP | When the user was created |
 
-First, run the development server:
+## events
+| Column          | Type         | Constraints               | Description                    |
+| --------------- | ------------ | ------------------------- | ------------------------------ |
+| `id`            | UUID / INT   | PK                        | Unique event ID                |
+| `name`          | VARCHAR(150) | NOT NULL                  | Event name                     |
+| `description`   | TEXT         |                           | Event details or rules         |
+| `is_team_event` | BOOLEAN      | DEFAULT FALSE             | If `TRUE`, event is team-based |
+| `max_team_size` | INT          | NULLABLE                  | Maximum number of team members |
+| `min_team_size` | INT          | NULLABLE                  | Minimum number of team members |
+| `start_date`    | TIMESTAMP    | NOT NULL                  | Event start date/time          |
+| `end_date`      | TIMESTAMP    | NOT NULL                  | Event end date/time            |
+| `created_at`    | TIMESTAMP    | DEFAULT CURRENT_TIMESTAMP | Record creation time           |
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## teams
+| Column       | Type         | Constraints                | Description                            |
+| ------------ | ------------ | -------------------------- | -------------------------------------- |
+| `id`         | UUID / INT   | PK                         | Unique team ID                         |
+| `event_id`   | UUID / INT   | FK → `events.id`, NOT NULL | Event associated with the team         |
+| `team_name`  | VARCHAR(100) | NOT NULL                   | Chosen team name                       |
+| `team_code`  | VARCHAR(10)  | UNIQUE, NOT NULL           | Code to join the team (e.g., `ABC123`) |
+| `created_by` | UUID / INT   | FK → `users.id`, NOT NULL  | User who created the team              |
+| `created_at` | TIMESTAMP    | DEFAULT CURRENT_TIMESTAMP  | Team creation timestamp                |
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## team_members
+| Column      | Type                     | Constraints               | Description                   |
+| ----------- | ------------------------ | ------------------------- | ----------------------------- |
+| `id`        | UUID / INT               | PK                        | Unique membership ID          |
+| `team_id`   | UUID / INT               | FK → `teams.id`, NOT NULL | Team reference                |
+| `user_id`   | UUID / INT               | FK → `users.id`, NOT NULL | Member reference              |
+| `role`      | ENUM('leader', 'member') | DEFAULT 'member'          | Role of the member            |
+| `joined_at` | TIMESTAMP                | DEFAULT CURRENT_TIMESTAMP | When the user joined the team |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## registration
+| Column          | Type       | Constraints                | Description                 |
+| --------------- | ---------- | -------------------------- | --------------------------- |
+| `id`            | UUID / INT | PK                         | Unique registration ID      |
+| `event_id`      | UUID / INT | FK → `events.id`, NOT NULL | Event reference             |
+| `user_id`       | UUID / INT | FK → `users.id`, NULLABLE  | Used for solo registrations |
+| `team_id`       | UUID / INT | FK → `teams.id`, NULLABLE  | Used for team registrations |
+| `registered_at` | TIMESTAMP  | DEFAULT CURRENT_TIMESTAMP  | Registration timestamp      |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
