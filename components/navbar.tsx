@@ -10,11 +10,11 @@ import { AuthButton } from './auth-button';
 import { Button } from '@/components/ui/button';
 
 const navItems = [
-  { href: '#hero', title: 'Home' },
+  { href: '/', title: 'Home' },
   { href: '#about', title: 'Schedule' },
-  { href: '#gallery', title: 'Events' },
+  { href: '#events', title: 'Events' },
   { href: '#speakers', title: 'Coordinators' },
-  { href: '#guidelines', title: 'FAQ' },
+  { href: '#faq', title: 'FAQ' },
 ];
 
 export function Navbar({

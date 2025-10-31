@@ -6,7 +6,7 @@ import { Twitter, Linkedin } from "lucide-react";
 
 const Footer = () => {
   return (
-    <section className=" bottom-0 bg-black w-full flex items-center justify-between overflow-hidden text-white">
+    <section className="bg-black w-full flex items-center justify-between overflow-hidden text-white">
       <div className="relative z-10 w-full rounded-t-lg bg-gradient-to-blue from-gray-800 via-gray-900 to-black p-4 text-white shadow-lg">
         <div className="mx-auto flex flex-col items-start justify-between">
           <div className="flex w-full items-center justify-center">

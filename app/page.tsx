@@ -1,18 +1,18 @@
 "use client";
 
-import { Navbar } from "@/components/navbar";
-import Footer from "@/components/footer";
 import Hero from "@/components/hero-section";
+import EventCard from "@/components/event-card";
+import FAQ from "@/components/faq";
 
 export default function HomePage() {
   return (
     <>
-      <Navbar />
       <Hero />
+      <EventCard />
+      <FAQ/>
       <main className="pt-20">
         {/* Other homepage sections or routed children can go here */}
       </main>
-      <Footer />
     </>
   );
 }
