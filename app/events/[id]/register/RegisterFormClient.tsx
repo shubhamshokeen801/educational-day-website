@@ -14,13 +14,13 @@ export default function RegisterFormClient({ event }: { event: any }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
 
-  // 🔹 Helper to show feedback messages
+  // Helper to show feedback messages
   const showMessage = (text: string, type: 'error' | 'success' = 'error') => {
     setMessage({ text, type });
     setTimeout(() => setMessage(null), 4000);
   };
 
-  // 🔹 SOLO REGISTRATION
+  // SOLO REGISTRATION
   const handleSolo = async () => {
     try {
       setLoading(true);
@@ -42,7 +42,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
     }
   };
 
-  // 🔹 CREATE TEAM
+  // CREATE TEAM
   const handleCreateTeam = async () => {
     if (!teamName.trim()) return showMessage('Please enter a valid team name.');
     try {
@@ -65,7 +65,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
     }
   };
 
-  // 🔹 JOIN TEAM
+  // JOIN TEAM
   const handleJoinTeam = async () => {
     if (!joinCode.trim()) return showMessage('Please enter a team code.');
     try {
@@ -80,7 +80,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
       if (!res.ok) return showMessage(data.error || 'Error joining team.');
 
       showMessage('Joined team successfully!', 'success');
-      router.push('/profile');
+      router.push('/');
     } catch (err) {
       showMessage('Unexpected error. Try again.');
     } finally {
@@ -94,7 +94,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
         Register for <span className="text-blue-600">{event.name}</span>
       </h3>
 
-      {/* 🔹 Select mode */}
+      {/* Select mode */}
       {event.is_team_event ? (
         <>
           <div className="flex items-center gap-6 mb-4 text-black">
@@ -195,7 +195,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
         </div>
       )}
 
-      {/* 🔹 Message feedback */}
+      {/* Message feedback */}
       {message && (
         <p
           className={`mt-5 text-center text-sm font-medium ${

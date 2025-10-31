@@ -7,6 +7,7 @@ import { Sun, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { createClient } from '@/app/lib/supabaseClient';
 import { AuthButton } from './auth-button';
+import { Button } from '@/components/ui/button';
 
 const navItems = [
   { href: '#hero', title: 'Home' },
@@ -26,23 +27,34 @@ export function Navbar({
   const supabase = createClient();
   const [hovered, setHovered] = useState<number | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [role, setRole] = useState<string | null>(null);
 
-  // ✅ Fetch current user session
+  // Fetch current user + role
   useEffect(() => {
     const getSession = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+
+      if (user) {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (profile?.role) setRole(profile.role);
+      }
     };
 
     getSession();
 
-    // ✅ Keep it in sync if user signs in/out
+    // Keep in sync with Supabase auth
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (!session?.user) setRole(null);
+      else getSession();
     });
 
     return () => subscription.unsubscribe();
@@ -92,7 +104,16 @@ export function Navbar({
 
       {/* Right Controls */}
       <div className="flex gap-3 items-center">
-        {/* ✅ Auth Button */}
+        {/* Show admin dashboard if user is admin */}
+        {role === 'admin' && (
+          <Link href="/admin/dashboard">
+            <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+              Admin Dashboard
+            </Button>
+          </Link>
+        )}
+
+        {/* Auth Button */}
         <AuthButton user={user} />
 
         {/* Theme toggle */}
