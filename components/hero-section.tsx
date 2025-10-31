@@ -2,14 +2,13 @@ import React from "react";
 
 const Hero: React.FC = () => {
   return (
-    <section className="bg-white text-center py-32 px-6">
+    <section className="bg-white text-center py-24 px-6">
       <div className="max-w-5xl mx-auto">
-        {/* Main Heading */}
+        {/* Headings */}
         <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight">
           Celebrate Learning, Innovation, and Growth
         </h1>
 
-        {/* Subheading */}
         <h2 className="text-4xl md:text-5xl font-extrabold text-blue-600 mt-3">
           Educational Day 2025
         </h2>
@@ -35,6 +34,15 @@ const Hero: React.FC = () => {
           >
             Register Now
           </a>
+        </div>
+
+        {/* Sponsor/Partner Logos Image */}
+        <div className="mt-16">
+          <img
+            src="/incubations-B2_MaBFr.png"
+            alt="Event Sponsors and Partners"
+            className="mx-auto max-w-full h-auto"
+          />
         </div>
       </div>
     </section>
