@@ -3,6 +3,7 @@
 import Hero from "@/components/hero-section";
 import EventCard from "@/components/event-card";
 import { FAQ } from "@/components/faq";
+import MunEventsSection from "@/components/mun-events"
 import EventSchedule from "@/components/eventSchedule";
 
 export default function HomePage() {
@@ -11,6 +12,7 @@ export default function HomePage() {
       <Hero />
       <EventSchedule />
       <EventCard />
+      <MunEventsSection/>
       <FAQ/>
       <main className="pt-20">
         {/* Other homepage sections or routed children can go here */}
