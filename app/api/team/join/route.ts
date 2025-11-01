@@ -1,13 +1,21 @@
-// app/api/team/join/route.ts
 import { NextResponse } from 'next/server';
 import { createServerClientInstance } from '@/app/lib/supabaseServerClient';
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { teamCode } = body;
+    const { teamCode, phoneNumber } = body;
+    
     if (!teamCode) {
       return NextResponse.json({ error: 'teamCode is required' }, { status: 400 });
+    }
+    
+    // Validate phone number
+    if (!phoneNumber || !/^[0-9]{10}$/.test(phoneNumber)) {
+      return NextResponse.json(
+        { error: 'Valid 10-digit phone number is required' }, 
+        { status: 400 }
+      );
     }
 
     const supabase = await createServerClientInstance();
@@ -35,12 +43,10 @@ export async function POST(req: Request) {
 
     if (eventErr) return NextResponse.json({ error: 'Error fetching event' }, { status: 500 });
     if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-    if (!event.registration_open)
-      return NextResponse.json({ error: 'Registrations for this event are closed' }, { status: 400 });
-
+    
     // check registration open
     if (!event.registration_open)
-  return NextResponse.json({ error: "Registrations are closed." }, { status: 400 });
+      return NextResponse.json({ error: "Registrations are closed." }, { status: 400 });
 
     // Check if user already registered (solo)
     const { data: soloReg } = await supabase
@@ -64,10 +70,8 @@ export async function POST(req: Request) {
       .eq('user_id', user.id);
 
     if (userTeams && userTeams.length > 0) {
-      // Get all team IDs the user is in
       const teamIds = userTeams.map((t) => t.team_id);
 
-      // Check if any of those teams belong to this same event
       const { data: eventTeams } = await supabase
         .from('teams')
         .select('id')
@@ -112,13 +116,40 @@ export async function POST(req: Request) {
       }
     }
 
-    // Add member
+    // Verify that the team has a registration (created by leader)
+    const { data: teamRegistration } = await supabase
+      .from('registration')
+      .select('*')
+      .eq('team_id', team.id)
+      .maybeSingle();
+
+    if (!teamRegistration) {
+      return NextResponse.json(
+        { error: 'Team registration not found. Please contact the team leader.' },
+        { status: 400 }
+      );
+    }
+
+    // Check if leader has paid (optional check)
+    if (teamRegistration.payment_status !== 'completed') {
+      // You can optionally allow joining even if payment is pending
+      // Or you can enforce payment first - uncomment below to enforce:
+      /*
+      return NextResponse.json(
+        { error: 'Team registration payment is pending. Please wait for team leader to complete payment.' },
+        { status: 400 }
+      );
+      */
+    }
+
+    // Add member with phone number (NO registration creation - only join team_members)
     const { data: newMember, error: joinErr } = await supabase
       .from('team_members')
       .insert({
         team_id: team.id,
         user_id: user.id,
         role: 'member',
+        phone_number: phoneNumber,
       })
       .select()
       .single();
@@ -128,40 +159,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: joinErr.message }, { status: 500 });
     }
 
-    // Ensure registration exists for team (leader might have created it)
-    const { data: existingReg } = await supabase
-      .from('registration')
-      .select('*')
-      .eq('team_id', team.id)
-      .maybeSingle();
-
-    let registration = existingReg;
-    if (!existingReg) {
-      const { data: createdReg, error: regErr } = await supabase
-        .from('registration')
-        .insert({
-          event_id: event.id,
-          team_id: team.id,
-          payment_status: 'pending',
-          registered_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
-
-      if (regErr)
-        return NextResponse.json(
-          { error: 'Joined team but failed to create registration.' },
-          { status: 500 }
-        );
-
-      registration = createdReg;
-    }
-
     return NextResponse.json({
       success: true,
       team,
       member: newMember,
-      registration,
+      message: 'Successfully joined the team! The team leader will handle payment.',
     });
   } catch (err) {
     console.error('Unexpected error:', err);

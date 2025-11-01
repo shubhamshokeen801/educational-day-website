@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/app/lib/supabaseClient';
-import { Users, User, Plus, LogIn, Calendar, Award } from 'lucide-react';
+import { Users, User, Plus, LogIn, Calendar, Award, Phone } from 'lucide-react';
 
 export default function RegisterFormClient({ event }: { event: any }) {
   const router = useRouter();
@@ -12,6 +12,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
   const [mode, setMode] = useState<'solo' | 'team' | null>(null);
   const [teamName, setTeamName] = useState('');
   const [joinCode, setJoinCode] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
 
@@ -20,20 +21,45 @@ export default function RegisterFormClient({ event }: { event: any }) {
     setTimeout(() => setMessage(null), 4000);
   };
 
+  const validatePhone = (phone: string) => {
+    const phoneRegex = /^[0-9]{10}$/;
+    return phoneRegex.test(phone.replace(/\s/g, ''));
+  };
+
+  const isFreeEvent = event.entry_fee === 0 || event.entry_fee === null;
+
   const handleSolo = async () => {
+    if (!phoneNumber.trim()) return showMessage('Please enter your phone number.');
+    if (!validatePhone(phoneNumber)) return showMessage('Please enter a valid 10-digit phone number.');
+    
     try {
       setLoading(true);
-      const res = await fetch('/api/register/solo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId: event.id }),
-      });
+      
+      if (isFreeEvent) {
+        // Free event - direct registration
+        const res = await fetch('/api/register/solo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            eventId: event.id,
+            phoneNumber: phoneNumber.replace(/\s/g, '')
+          }),
+        });
 
-      const data = await res.json();
-      if (!res.ok) return showMessage(data.error || 'Error while registering solo.');
+        const data = await res.json();
+        if (!res.ok) return showMessage(data.error || 'Error while registering solo.');
 
-      showMessage('Solo registration successful!', 'success');
-      router.push(`/events/${event.id}/payment?reg=${data.registration.id}`);
+        showMessage('Registration successful!', 'success');
+        setTimeout(() => router.push('/'), 1500);
+      } else {
+        // Paid event - redirect to payment
+        const params = new URLSearchParams({
+          eventId: event.id,
+          type: 'solo',
+          phoneNumber: phoneNumber.replace(/\s/g, '')
+        });
+        router.push(`/events/${event.id}/payment?${params.toString()}`);
+      }
     } catch (err) {
       showMessage('Unexpected error. Try again.');
     } finally {
@@ -43,19 +69,39 @@ export default function RegisterFormClient({ event }: { event: any }) {
 
   const handleCreateTeam = async () => {
     if (!teamName.trim()) return showMessage('Please enter a valid team name.');
+    if (!phoneNumber.trim()) return showMessage('Please enter your phone number.');
+    if (!validatePhone(phoneNumber)) return showMessage('Please enter a valid 10-digit phone number.');
+    
     try {
       setLoading(true);
-      const res = await fetch('/api/team/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId: event.id, teamName }),
-      });
+      
+      if (isFreeEvent) {
+        // Free event - direct team creation
+        const res = await fetch('/api/team/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            eventId: event.id, 
+            teamName,
+            phoneNumber: phoneNumber.replace(/\s/g, '')
+          }),
+        });
 
-      const data = await res.json();
-      if (!res.ok) return showMessage(data.error || 'Error creating team.');
+        const data = await res.json();
+        if (!res.ok) return showMessage(data.error || 'Error creating team.');
 
-      showMessage('Team created successfully!', 'success');
-      router.push(`/events/${event.id}/team/${data.team.team_code}?reg=${data.registration.id}`);
+        showMessage('Team created successfully!', 'success');
+        setTimeout(() => router.push(`/events/${event.id}/team/${data.team.team_code}`), 1500);
+      } else {
+        // Paid event - redirect to payment
+        const params = new URLSearchParams({
+          eventId: event.id,
+          type: 'team-create',
+          teamName: teamName,
+          phoneNumber: phoneNumber.replace(/\s/g, '')
+        });
+        router.push(`/events/${event.id}/payment?${params.toString()}`);
+      }
     } catch (err) {
       showMessage('Unexpected error. Try again.');
     } finally {
@@ -65,19 +111,38 @@ export default function RegisterFormClient({ event }: { event: any }) {
 
   const handleJoinTeam = async () => {
     if (!joinCode.trim()) return showMessage('Please enter a team code.');
+    if (!phoneNumber.trim()) return showMessage('Please enter your phone number.');
+    if (!validatePhone(phoneNumber)) return showMessage('Please enter a valid 10-digit phone number.');
+    
     try {
       setLoading(true);
-      const res = await fetch('/api/team/join', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teamCode: joinCode }),
-      });
+      
+      if (isFreeEvent) {
+        // Free event - direct join
+        const res = await fetch('/api/team/join', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            teamCode: joinCode,
+            phoneNumber: phoneNumber.replace(/\s/g, '')
+          }),
+        });
 
-      const data = await res.json();
-      if (!res.ok) return showMessage(data.error || 'Error joining team.');
+        const data = await res.json();
+        if (!res.ok) return showMessage(data.error || 'Error joining team.');
 
-      showMessage('Joined team successfully!', 'success');
-      router.push('/');
+        showMessage('Joined team successfully!', 'success');
+        setTimeout(() => router.push('/'), 1500);
+      } else {
+        // Paid event - redirect to payment
+        const params = new URLSearchParams({
+          eventId: event.id,
+          type: 'team-join',
+          teamCode: joinCode,
+          phoneNumber: phoneNumber.replace(/\s/g, '')
+        });
+        router.push(`/events/${event.id}/payment?${params.toString()}`);
+      }
     } catch (err) {
       showMessage('Unexpected error. Try again.');
     } finally {
@@ -99,8 +164,23 @@ export default function RegisterFormClient({ event }: { event: any }) {
           </div>
         </div>
         <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20">
-          <h3 className="text-lg sm:text-2xl font-semibold mb-2">{event.name}</h3>
-          <p className="text-sm sm:text-base text-white/80">Secure your spot in this educational journey</p>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg sm:text-2xl font-semibold">{event.name}</h3>
+            {isFreeEvent ? (
+              <span className="bg-green-500 text-white px-3 py-1 rounded-full text-xs sm:text-sm font-semibold">
+                FREE
+              </span>
+            ) : (
+              <span className="bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold">
+                ₹{event.entry_fee}
+              </span>
+            )}
+          </div>
+          <p className="text-sm sm:text-base text-white/80">
+            {isFreeEvent 
+              ? 'Secure your spot in this free educational journey' 
+              : 'Complete payment to secure your registration'}
+          </p>
         </div>
       </div>
 
@@ -184,6 +264,27 @@ export default function RegisterFormClient({ event }: { event: any }) {
                     <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
                       Register as a solo participant and showcase your individual skills
                     </p>
+                    
+                    {/* Phone Number Input */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Phone className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          type="tel"
+                          placeholder="Enter 10-digit phone number"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          maxLength={10}
+                          className="w-full pl-10 border-2 border-indigo-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
+                        />
+                      </div>
+                    </div>
+
                     <button
                       onClick={handleSolo}
                       disabled={loading}
@@ -199,8 +300,10 @@ export default function RegisterFormClient({ event }: { event: any }) {
                           </svg>
                           Processing...
                         </span>
+                      ) : isFreeEvent ? (
+                        'Register Now (Free)'
                       ) : (
-                        'Proceed with Solo Registration'
+                        `Proceed to Payment (₹${event.entry_fee})`
                       )}
                     </button>
                   </div>
@@ -221,12 +324,30 @@ export default function RegisterFormClient({ event }: { event: any }) {
                         <p className="text-xs sm:text-sm text-gray-600">Become a team leader</p>
                       </div>
                     </div>
-                    <input
-                      placeholder="Enter your team name"
-                      value={teamName}
-                      onChange={(e) => setTeamName(e.target.value)}
-                      className="w-full border-2 border-purple-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-purple-200 focus:border-purple-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
-                    />
+                    
+                    <div className="space-y-3">
+                      <input
+                        placeholder="Enter your team name"
+                        value={teamName}
+                        onChange={(e) => setTeamName(e.target.value)}
+                        className="w-full border-2 border-purple-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-purple-200 focus:border-purple-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
+                      />
+                      
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-4 sm:left-5 flex items-center pointer-events-none">
+                          <Phone className="h-5 w-5 text-purple-400" />
+                        </div>
+                        <input
+                          type="tel"
+                          placeholder="Your phone number (10 digits)"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          maxLength={10}
+                          className="w-full pl-12 sm:pl-14 border-2 border-purple-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-purple-200 focus:border-purple-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
+                        />
+                      </div>
+                    </div>
+                    
                     <button
                       onClick={handleCreateTeam}
                       disabled={loading}
@@ -234,7 +355,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
                         loading ? 'opacity-70 cursor-not-allowed' : ''
                       }`}
                     >
-                      {loading ? 'Creating Team...' : 'Create Team & Lead'}
+                      {loading ? 'Processing...' : isFreeEvent ? 'Create Team (Free)' : `Create Team & Pay (₹${event.entry_fee})`}
                     </button>
                   </div>
 
@@ -259,12 +380,30 @@ export default function RegisterFormClient({ event }: { event: any }) {
                         <p className="text-xs sm:text-sm text-gray-600">Have a team code?</p>
                       </div>
                     </div>
-                    <input
-                      placeholder="Enter team code"
-                      value={joinCode}
-                      onChange={(e) => setJoinCode(e.target.value)}
-                      className="w-full border-2 border-green-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-green-200 focus:border-green-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
-                    />
+                    
+                    <div className="space-y-3">
+                      <input
+                        placeholder="Enter team code"
+                        value={joinCode}
+                        onChange={(e) => setJoinCode(e.target.value)}
+                        className="w-full border-2 border-green-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-green-200 focus:border-green-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
+                      />
+                      
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-4 sm:left-5 flex items-center pointer-events-none">
+                          <Phone className="h-5 w-5 text-green-400" />
+                        </div>
+                        <input
+                          type="tel"
+                          placeholder="Your phone number (10 digits)"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          maxLength={10}
+                          className="w-full pl-12 sm:pl-14 border-2 border-green-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-green-200 focus:border-green-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
+                        />
+                      </div>
+                    </div>
+                    
                     <button
                       onClick={handleJoinTeam}
                       disabled={loading}
@@ -272,7 +411,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
                         loading ? 'opacity-70 cursor-not-allowed' : ''
                       }`}
                     >
-                      {loading ? 'Joining Team...' : 'Join Team'}
+                      {loading ? 'Processing...' : isFreeEvent ? 'Join Team (Free)' : `Join Team & Pay (₹${event.entry_fee})`}
                     </button>
                   </div>
                 </div>
@@ -292,6 +431,27 @@ export default function RegisterFormClient({ event }: { event: any }) {
                   <p className="text-sm sm:text-base text-gray-600 mt-1">Individual participation only</p>
                 </div>
               </div>
+              
+              {/* Phone Number Input */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Phone className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="tel"
+                    placeholder="Enter 10-digit phone number"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    maxLength={10}
+                    className="w-full pl-10 border-2 border-indigo-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
+                  />
+                </div>
+              </div>
+
               <button
                 onClick={handleSolo}
                 disabled={loading}
@@ -307,8 +467,10 @@ export default function RegisterFormClient({ event }: { event: any }) {
                     </svg>
                     Processing...
                   </span>
+                ) : isFreeEvent ? (
+                  'Register Now (Free)'
                 ) : (
-                  'Register for Event'
+                  `Proceed to Payment (₹${event.entry_fee})`
                 )}
               </button>
             </div>

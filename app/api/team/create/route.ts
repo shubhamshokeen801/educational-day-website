@@ -11,7 +11,16 @@ function genCode(len = 6) {
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { eventId, teamName } = body;
+  const { eventId, teamName, phoneNumber } = body;
+  
+  // Validate phone number
+  if (!phoneNumber || !/^[0-9]{10}$/.test(phoneNumber)) {
+    return NextResponse.json(
+      { error: 'Valid 10-digit phone number is required' }, 
+      { status: 400 }
+    );
+  }
+  
   const supabase = await createServerClientInstance();
 
   // verify user session
@@ -24,7 +33,7 @@ export async function POST(req: Request) {
 
   // check registration open
   if (!event.registration_open)
-  return NextResponse.json({ error: "Registrations are closed." }, { status: 400 });
+    return NextResponse.json({ error: "Registrations are closed." }, { status: 400 });
 
   // ensure team events allowed
   if (!event.is_team_event) {
@@ -84,12 +93,13 @@ export async function POST(req: Request) {
     role: 'leader'
   });
 
-  // create registration for the team (leader pays)
+  // create registration for the team (leader pays) with phone number
   const { data: reg, error: regErr } = await supabase
     .from('registration')
     .insert({
       event_id: eventId,
       team_id: team.id,
+      phone_number: phoneNumber,
       payment_status: 'pending',
       registered_at: new Date().toISOString()
     })

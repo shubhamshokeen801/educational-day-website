@@ -2,7 +2,16 @@ import { NextResponse } from 'next/server';
 import { createServerClientInstance } from '@/app/lib/supabaseServerClient';
 
 export async function POST(req: Request) {
-  const { eventId } = await req.json();
+  const { eventId, phoneNumber } = await req.json();
+  
+  // Validate phone number
+  if (!phoneNumber || !/^[0-9]{10}$/.test(phoneNumber)) {
+    return NextResponse.json(
+      { error: 'Valid 10-digit phone number is required' }, 
+      { status: 400 }
+    );
+  }
+  
   const supabase = await createServerClientInstance();
 
   // Verify user session
@@ -10,7 +19,7 @@ export async function POST(req: Request) {
   if (!user)
     return NextResponse.json({ error: 'Signin to register in event' }, { status: 401 });
 
-  //Check if event exists and allows solo/team registration
+  // Check if event exists and allows solo/team registration
   const { data: event, error: eventErr } = await supabase
     .from('events')
     .select('*')
@@ -20,13 +29,12 @@ export async function POST(req: Request) {
   if (eventErr) return NextResponse.json({ error: 'Error fetching event' }, { status: 500 });
   if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
 
-  //check registration open for event
+  // Check registration open for event
   if (!event.registration_open)
-  return NextResponse.json({ error: "Registrations are closed." }, { status: 400 });
+    return NextResponse.json({ error: "Registrations are closed." }, { status: 400 });
 
-  //If event allows team registration, ensure user is not part of any team for this event
+  // If event allows team registration, ensure user is not part of any team for this event
   if (event.is_team_event) {
-    // Find all teams for this event that the user is a member or leader of
     const { data: userTeams, error: teamCheckErr } = await supabase
       .from('team_members')
       .select('team_id')
@@ -52,7 +60,7 @@ export async function POST(req: Request) {
     }
   }
 
-  //Check if user already has a solo registration
+  // Check if user already has a solo registration
   const { data: existing } = await supabase
     .from('registration')
     .select('*')
@@ -63,12 +71,13 @@ export async function POST(req: Request) {
   if (existing)
     return NextResponse.json({ error: 'Already registered for this event' }, { status: 400 });
 
-  //Insert new solo registration
+  // Insert new solo registration with phone number
   const { data: reg, error } = await supabase
     .from('registration')
     .insert({
       event_id: eventId,
       user_id: user.id,
+      phone_number: phoneNumber,
       payment_status: 'pending',
       registered_at: new Date().toISOString(),
     })
