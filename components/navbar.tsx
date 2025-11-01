@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Sun, Moon, Menu, X, GraduationCap } from 'lucide-react';
+import { Sun, Moon, Menu, X, GraduationCap, UserCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createClient } from '@/app/lib/supabaseClient';
 import { AuthButton } from './auth-button';
@@ -219,7 +219,19 @@ export function Navbar({
                   <h3 className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">
                     Account
                   </h3>
-                  
+
+                  {user && (
+                    <Link
+                      href="/profile"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                        <UserCircle className="w-4 h-4 mr-2" />
+                        View Profile
+                      </Button>
+                    </Link>
+                  )}
+
                   {role === 'admin' && (
                     <Link
                       href="/admin/dashboard"

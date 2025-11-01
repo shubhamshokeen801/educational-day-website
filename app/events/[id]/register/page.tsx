@@ -169,10 +169,10 @@ export default async function RegisterPage({ params }: { params: Promise<{ id: s
               </div>
             )}
           </div>
-        </div>
-
         {/* Registration Form */}
         <RegisterFormClient event={event} />
+        </div>
+
       </div>
     </div>
   );
