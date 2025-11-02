@@ -13,7 +13,7 @@ const navItems: { href: string; title: string; highlight?: boolean }[] = [
   { href: '/#home', title: 'Home' },
   { href: '/#schedule', title: 'Schedule' },
   { href: '/#events', title: 'Events' },
-  { href: '/#mun', title: 'MUN'}, 
+  { href: '/#mun', title: 'MUN' },
   { href: '/#schedule', title: 'Coordinators' },
   { href: '/#faq', title: 'FAQ' },
 ];
@@ -177,64 +177,71 @@ export function Navbar({
             >
               <div className="flex flex-col p-6 space-y-6">
                 {/* Navigation Links */}
-                  <h3 className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">
-                    Navigation
-                  </h3>
-                  {navItems.map((item, idx) => (
-                    <Link
-                      key={idx}
-                      href={item.href}
-                      onMouseEnter={() => setHovered(idx)}
-                      onMouseLeave={() => setHovered(null)}
-                      className={`relative  py-2 text-sm font-medium transition-all duration-200 rounded-lg
+                <h3 className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">
+                  Navigation
+                </h3>
+                {navItems.map((item, idx) => (
+                  <Link
+                    key={idx}
+                    href={item.href}
+                    onMouseEnter={() => setHovered(idx)}
+                    onMouseLeave={() => setHovered(null)}
+                    className={`relative  py-2 text-sm font-medium transition-all duration-200 rounded-lg
                         ${item.highlight
-                          ? 'bg-white text-blue-700 hover:bg-gray-100 shadow-md'
-                          : 'text-white/90 hover:text-white'
-                        }`}
-                    >
-                      {hovered === idx && !item.highlight && (
-                        <motion.span
-                          layoutId="hovered-span"
-                          className="absolute inset-0 rounded-lg bg-white/20 backdrop-blur-sm"
-                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                        />
-                      )}
-                      <span className="relative z-10">{item.title}</span>
-                    </Link>
+                        ? 'bg-white text-blue-700 hover:bg-gray-100 shadow-md'
+                        : 'text-white/90 hover:text-white'
+                      }`}
+                  >
+                    {hovered === idx && !item.highlight && (
+                      <motion.span
+                        layoutId="hovered-span"
+                        className="absolute inset-0 rounded-lg bg-white/20 backdrop-blur-sm"
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <span className="relative z-10">{item.title}</span>
+                  </Link>
 
-                  ))}
+                ))}
 
 
+                {/* User Actions */}
                 {/* User Actions */}
                 <div className="pt-4 border-t border-white/20 space-y-3">
                   <h3 className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">
                     Account
                   </h3>
 
-                  {user && (
-                    <Link
-                      href="/profile"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Button className="w-[90%] mb-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
-                        <UserCircle className="w-4 h-4 mr-2" />
-                        View Profile
-                      </Button>
-                    </Link>
-                  )}
+                  {user ? (
+                    <>
+                      <Link
+                        href="/profile"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Button className="w-[90%] mb-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                          <UserCircle className="w-4 h-4 mr-2" />
+                          View Profile
+                        </Button>
+                      </Link>
 
-                  {role === 'admin' && (
-                    <Link
-                      href="/admin"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Button className="w-[90%] bg-yellow-500 hover:bg-yellow-600 text-blue-900 font-semibold">
-                        Admin Dashboard
-                      </Button>
-                    </Link>
+                      {role === 'admin' && (
+                        <Link
+                          href="/admin"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <Button className="w-[90%] bg-yellow-500 hover:bg-yellow-600 text-blue-900 font-semibold">
+                            Admin Dashboard
+                          </Button>
+                        </Link>
+                      )}
+                    </>
+                  ) : (
+                    <div className="w-[90%]">
+                      <AuthButton user={null} />
+                    </div>
                   )}
-
                 </div>
+
 
               </div>
             </motion.div>

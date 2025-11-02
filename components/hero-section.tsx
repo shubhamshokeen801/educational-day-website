@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import LightRays from './LightRays';
 import { Twitter, Linkedin, MapPin, Mail, Phone, Heart, ExternalLink, ChevronRight, GraduationCap, Sparkles, ArrowRight, Calendar, Users } from "lucide-react";
 
 // Hero Component
@@ -101,8 +102,6 @@ export const Hero: React.FC = () => {
           </motion.div>
         </div>
       </div>
-
-      
     </section>
   );
 };
