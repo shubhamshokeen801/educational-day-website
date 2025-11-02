@@ -32,9 +32,9 @@ export const Hero: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="flex items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-8"
           >
-            <GraduationCap className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-blue-600 dark:text-blue-400" />
+            {/* <GraduationCap className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-blue-600 dark:text-blue-400" /> */}
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-blue-600 dark:text-blue-400">
-              Education Day
+              Tech Media Fest 2025 <br /> and <br /> Education Day 2025
             </h2>
           </motion.div>
 
@@ -56,11 +56,11 @@ export const Hero: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="flex flex-wrap items-center justify-center gap-4 w-full sm:gap-6 md:gap-8 mt-5 sm:mt-10 md:mt-7 px-4"
           >
-            <div className="flex items-center justify-center w-50 gap-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm px-4 sm:px-6 py-3 rounded-xl shadow-md">
+            <div className="flex items-center justify-center w-60 gap-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm px-4 sm:px-6 py-3 rounded-xl shadow-md">
               <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
               <div className="text-left">
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Event Date</p>
-                <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">March 2025</p>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Event Dates</p>
+                <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">12 and 13 Nov 2025</p>
               </div>
             </div>
           </motion.div>

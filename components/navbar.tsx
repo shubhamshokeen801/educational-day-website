@@ -10,11 +10,11 @@ import { AuthButton } from './auth-button';
 import { Button } from '@/components/ui/button';
 
 const navItems = [
-  { href: '#home', title: 'Home' },
-  { href: '#schedule', title: 'Schedule' },
-  { href: '#events', title: 'Events' },
-  { href: '#speakers', title: 'Coordinators' },
-  { href: '#faq', title: 'FAQ' },
+  { href: '/#home', title: 'Home' },
+  { href: '/#schedule', title: 'Schedule' },
+  { href: '/#events', title: 'Events' },
+  { href: '/#schedule', title: 'Coordinators' },
+  { href: '/#faq', title: 'FAQ' },
 ];
 
 export function Navbar({
@@ -135,7 +135,7 @@ export function Navbar({
           <motion.button
             aria-label="Toggle mobile menu"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 mr-5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20"
+            className="lg:hidden p-2  rounded-lg bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20"
             whileTap={{ scale: 0.9 }}
           >
             {mobileMenuOpen ? (

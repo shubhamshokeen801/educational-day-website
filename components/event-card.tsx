@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { createClient } from "@/app/lib/supabaseClient";
 import Link from "next/link";
-import { Calendar, Users, User, Clock, MapPin, ArrowRight, Sparkles } from "lucide-react";
+import { Calendar, Users, User, ArrowRight, Sparkles } from "lucide-react";
 
 interface Event {
   id: string;
@@ -18,6 +18,17 @@ interface Event {
   registration_open: boolean;
   image_url?: string;
   is_mun_event?: string | null;
+  slug?: string; // Add slug field
+}
+
+// Helper function to create URL-friendly slug
+function createSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-'); // Replace multiple hyphens with single hyphen
 }
 
 export default function EventCard() {
@@ -93,109 +104,82 @@ export default function EventCard() {
       {/* Events Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto">
         <AnimatePresence>
-          {events.map((event, index) => (
-            <motion.div
-              key={event.id}
-              layout
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="group relative bg-white dark:bg-neutral-900 rounded-2xl sm:rounded-3xl shadow-lg hover:shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col transition-all duration-300"
-            >
-              {/* Status Badge */}
-              {event.registration_open && (
-                <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-10">
-                  <div className="bg-green-500 text-white text-xs sm:text-sm font-bold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-lg flex items-center gap-1 sm:gap-1.5">
-                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full animate-pulse"></div>
-                    Open
-                  </div>
-                </div>
-              )}
-
-              {/* Event Image */}
-              <div className="relative w-full h-48 sm:h-56 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/20 dark:to-purple-900/20 overflow-hidden">
-                <img
-                  src={event.image_url || "https://placehold.co/600x400?text=Event+Image"}
-                  alt={event.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </div>
-
-              {/* Event Info */}
-              <div className="p-5 sm:p-6 flex flex-col flex-1">
-                <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-neutral-800 dark:text-neutral-100 line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                  {event.name}
-                </h3>
-
-                <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-4 sm:mb-5 line-clamp-2">
-                  {event.description || "Join us for an exciting learning experience!"}
-                </p>
-
-                {/* Event Details */}
-                <div className="space-y-2 sm:space-y-2.5 mb-4 sm:mb-5">
-                  <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                    <div className="bg-indigo-100 dark:bg-indigo-900/30 p-1.5 sm:p-2 rounded-lg">
-                      <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-600 dark:text-indigo-400" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-700 dark:text-gray-300">
-                        {new Date(event.start_date).toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric',
-                          year: 'numeric'
-                        })}
-                      </p>
+          {events.map((event, index) => {
+            // Use slug from database or generate from name
+            const eventSlug = event.slug || createSlug(event.name);
+            
+            return (
+              <motion.div
+                key={event.id}
+                layout
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                className="group relative bg-white dark:bg-neutral-900 rounded-2xl sm:rounded-3xl shadow-lg hover:shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col transition-all duration-300"
+              >
+                {/* Status Badge */}
+                {event.registration_open && (
+                  <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-10">
+                    <div className="bg-green-500 text-white text-xs sm:text-sm font-bold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-lg flex items-center gap-1 sm:gap-1.5">
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full animate-pulse"></div>
+                      Open
                     </div>
                   </div>
+                )}
 
-                  <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                    <div className="bg-purple-100 dark:bg-purple-900/30 p-1.5 sm:p-2 rounded-lg">
-                      <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-700 dark:text-gray-300">
-                        Ends {new Date(event.end_date).toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric'
-                        })}
-                      </p>
-                    </div>
-                  </div>
+                {/* Event Image */}
+                <div className="relative w-full h-48 sm:h-56 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/20 dark:to-purple-900/20 overflow-hidden">
+                  <img
+                    src={event.image_url || "https://placehold.co/600x400?text=Event+Image"}
+                    alt={event.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
 
-                {/* Footer */}
-                <div className="flex justify-between items-center mt-auto pt-3 sm:pt-4 border-t border-gray-100 dark:border-gray-800">
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    {event.is_team_event ? (
-                      <>
-                        <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
-                        <span className="text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400">
-                          Team Event
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <User className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400" />
-                        <span className="text-xs sm:text-sm font-semibold text-green-600 dark:text-green-400">
-                          Solo Event
-                        </span>
-                      </>
-                    )}
-                  </div>
+                {/* Event Info */}
+                <div className="p-5 sm:p-6 flex flex-col flex-1">
+                  <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-neutral-800 dark:text-neutral-100 line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    {event.name}
+                  </h3>
 
-                  <Link
-                    href={`/events/${event.id}/register`}
-                    className="relative px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs sm:text-sm font-semibold rounded-xl sm:rounded-2xl transition-all duration-300 shadow-md hover:shadow-xl flex items-center gap-1.5 sm:gap-2"
-                  >
-                    Register
-                    <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover/btn:translate-x-1 transition-transform" />
-                  </Link>
+                  <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-4 sm:mb-5 line-clamp-2">
+                    {event.description || "Join us for an exciting learning experience!"}
+                  </p>
+
+                  {/* Footer */}
+                  <div className="flex justify-between items-center mt-auto pt-3 sm:pt-4 border-t border-gray-100 dark:border-gray-800">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      {event.is_team_event ? (
+                        <>
+                          <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
+                          <span className="text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400">
+                            Team Event
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400" />
+                          <span className="text-xs sm:text-sm font-semibold text-green-600 dark:text-green-400">
+                            Solo Event
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    <Link
+                      href={`/events/${eventSlug}/register`}
+                      className="relative px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs sm:text-sm font-semibold rounded-xl sm:rounded-2xl transition-all duration-300 shadow-md hover:shadow-xl flex items-center gap-1.5 sm:gap-2"
+                    >
+                      Register
+                      <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover/btn:translate-x-1 transition-transform" />
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </div>
 

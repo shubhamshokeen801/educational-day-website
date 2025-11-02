@@ -1,18 +1,57 @@
 import { createServerClientInstance } from "@/app/lib/supabaseServerClient";
 import RegisterFormClient from "./RegisterFormClient";
-import { Calendar, Clock, Users, User, CheckCircle, XCircle, Info, Sparkles } from "lucide-react";
+import { Calendar, Users, User, XCircle, Info, Sparkles } from "lucide-react";
 
-export default async function RegisterPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+// Helper function to create URL-friendly slug from name
+function createSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+}
+
+export default async function RegisterPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  
   const supabase = await createServerClientInstance();
 
-  const { data: event, error } = await supabase
+  // Fetch all events and find the matching one by generated slug
+  const { data: allEvents, error: fetchError } = await supabase
     .from("events")
-    .select("*")
-    .eq("id", id)
-    .single();
+    .select("*");
 
-  if (error || !event)
+  if (fetchError) {
+    console.error("Error fetching events:", fetchError);
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-neutral-950 dark:to-neutral-900">
+        <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl border-2 border-red-200 dark:border-red-800 p-8 sm:p-12 max-w-md text-center">
+          <div className="bg-red-100 dark:bg-red-900/30 w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <XCircle className="w-8 h-8 sm:w-10 sm:h-10 text-red-600 dark:text-red-400" />
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400 mb-3">Error Loading Event</h2>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{fetchError.message}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Find event by matching generated slug
+  const event = allEvents?.find(e => {
+    const eventSlug = e.slug || createSlug(e.name);
+    console.log(`Comparing: "${eventSlug}" with "${slug}"`); // Debug log
+    return eventSlug === slug;
+  });
+
+  if (!event) {
+    // Debug: Show available slugs
+    console.log("Available event slugs:", allEvents?.map(e => ({
+      name: e.name,
+      slug: e.slug || createSlug(e.name)
+    })));
+    
     return (
       <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-neutral-950 dark:to-neutral-900">
         <div className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl border-2 border-red-200 dark:border-red-800 p-8 sm:p-12 max-w-md text-center">
@@ -20,13 +59,21 @@ export default async function RegisterPage({ params }: { params: Promise<{ id: s
             <XCircle className="w-8 h-8 sm:w-10 sm:h-10 text-red-600 dark:text-red-400" />
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400 mb-3">Event Not Found</h2>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">The event you're looking for doesn't exist or has been removed.</p>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4">
+            The event "{slug}" doesn't exist or has been removed.
+          </p>
+          <a 
+            href="/#events" 
+            className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all"
+          >
+            Browse Events
+          </a>
         </div>
       </div>
     );
+  }
 
   const startDate = new Date(event.start_date);
-  const endDate = new Date(event.end_date);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-purple-950 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
@@ -38,24 +85,12 @@ export default async function RegisterPage({ params }: { params: Promise<{ id: s
             <img
               src={event.image_url || "https://placehold.co/1200x400?text=Event+Banner"}
               alt={event.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
             
             {/* Floating Badges */}
             <div className="absolute top-4 sm:top-6 right-4 sm:right-6 flex flex-col gap-2 sm:gap-3">
-              {event.registration_open ? (
-                <div className="bg-green-500 text-white text-xs sm:text-sm font-bold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-lg flex items-center gap-1.5 sm:gap-2 backdrop-blur-sm">
-                  <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  Registration Open
-                </div>
-              ) : (
-                <div className="bg-red-500 text-white text-xs sm:text-sm font-bold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-lg flex items-center gap-1.5 sm:gap-2 backdrop-blur-sm">
-                  <XCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  Registration Closed
-                </div>
-              )}
-              
               {event.is_team_event ? (
                 <div className="bg-blue-500 text-white text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-lg flex items-center gap-1.5 sm:gap-2 backdrop-blur-sm">
                   <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -93,7 +128,7 @@ export default async function RegisterPage({ params }: { params: Promise<{ id: s
                   <div className="bg-indigo-500 p-2 sm:p-2.5 rounded-xl">
                     <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
-                  <span className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">Start Date</span>
+                  <span className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">Date</span>
                 </div>
                 <p className="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-200">
                   {startDate.toLocaleDateString('en-US', { 
@@ -109,47 +144,6 @@ export default async function RegisterPage({ params }: { params: Promise<{ id: s
                   })}
                 </p>
               </div>
-
-              {/* End Date */}
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-4 sm:p-5 border border-purple-100 dark:border-purple-800">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-purple-500 p-2 sm:p-2.5 rounded-xl">
-                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                  </div>
-                  <span className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">End Date</span>
-                </div>
-                <p className="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-200">
-                  {endDate.toLocaleDateString('en-US', { 
-                    month: 'long', 
-                    day: 'numeric', 
-                    year: 'numeric' 
-                  })}
-                </p>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {endDate.toLocaleTimeString('en-US', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
-                </p>
-              </div>
-
-              {/* Team Size (if applicable) */}
-              {event.is_team_event && (
-                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-2xl p-4 sm:p-5 border border-blue-100 dark:border-blue-800">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="bg-blue-500 p-2 sm:p-2.5 rounded-xl">
-                      <Users className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                    </div>
-                    <span className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">Team Size</span>
-                  </div>
-                  <p className="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-200">
-                    {event.min_team_size || 1} - {event.max_team_size || "∞"} Members
-                  </p>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Per team
-                  </p>
-                </div>
-              )}
             </div>
 
             {/* Rules Section */}
@@ -169,10 +163,10 @@ export default async function RegisterPage({ params }: { params: Promise<{ id: s
               </div>
             )}
           </div>
-        {/* Registration Form */}
-        <RegisterFormClient event={event} />
+          
+          {/* Registration Form */}
+          <RegisterFormClient event={event} />
         </div>
-
       </div>
     </div>
   );
