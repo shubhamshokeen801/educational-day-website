@@ -5,8 +5,8 @@ import Footer from "@/components/footer";
 import { UserProvider } from "./context/UserContext";
 
 export const metadata = {
-  title: "Educational Day",
-  description: "Educational Day Website",
+  title: "Tech media fest",
+  description: "Tech Media Fest 2025 and Education Day 2025",
 };
 
 export default function RootLayout({

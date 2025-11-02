@@ -10,9 +10,9 @@ export default function HomePage() {
   return (
     <>
       <Hero />
+      <MunEventsSection/>
       <EventSchedule />
       <EventCard />
-      <MunEventsSection/>
       <FAQ/>
       <main className="pt-20">
         {/* Other homepage sections or routed children can go here */}
