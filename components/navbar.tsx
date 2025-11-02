@@ -9,13 +9,13 @@ import { createClient } from '@/app/lib/supabaseClient';
 import { AuthButton } from './auth-button';
 import { Button } from '@/components/ui/button';
 
-const navItems = [
+const navItems: { href: string; title: string; highlight?: boolean }[] = [
   { href: '/#home', title: 'Home' },
   { href: '/#schedule', title: 'Schedule' },
   { href: '/#events', title: 'Events' },
+  { href: '/#mun', title: 'MUN'}, 
   { href: '/#schedule', title: 'Coordinators' },
   { href: '/#faq', title: 'FAQ' },
-  { href: '/mun', title: 'MUN', highlight: true }, // 👈 new highlighted nav item
 ];
 
 
@@ -86,38 +86,38 @@ export function Navbar({
       >
         {/* Logo and Title */}
         <Link href={'/'} className="flex items-center gap-2 md:gap-3 group">
-            <Image
-              className="h-15 w-15 md:h-17 md:w-30 ring-2"
-              src="/bvicam.png"
-              height={48}
-              width={48}
-              alt="BVICAM Logo"
-            />
+          <Image
+            className="h-16 w-25 md:h-17 md:w-30 ring-2"
+            src="/bvicamLogo-CoQwK6Lh.png"
+            height={150}
+            width={150}
+            alt="BVICAM Logo"
+          />
         </Link>
 
         {/* Desktop Navigation Links */}
         <div className="hidden lg:flex items-center space-x-1">
           {navItems.map((item, idx) => (
-<Link
-  key={idx}
-  href={item.href}
-  onMouseEnter={() => setHovered(idx)}
-  onMouseLeave={() => setHovered(null)}
-  className={`relative px-4 py-2 text-sm font-medium transition-all duration-200 rounded-lg
-    ${item.highlight
-      ? 'bg-white text-blue-700 hover:bg-gray-100 shadow-md'
-      : 'text-white/90 hover:text-white'
-    }`}
->
-  {hovered === idx && !item.highlight && (
-    <motion.span
-      layoutId="hovered-span"
-      className="absolute inset-0 rounded-lg bg-white/20 backdrop-blur-sm"
-      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-    />
-  )}
-  <span className="relative z-10">{item.title}</span>
-</Link>
+            <Link
+              key={idx}
+              href={item.href}
+              onMouseEnter={() => setHovered(idx)}
+              onMouseLeave={() => setHovered(null)}
+              className={`relative px-4 py-2 text-sm font-medium transition-all duration-200 rounded-lg
+              ${item.highlight
+                  ? 'bg-white text-blue-700 hover:bg-gray-100 shadow-md'
+                  : 'text-white/90 hover:text-white'
+                }`}
+            >
+              {hovered === idx && !item.highlight && (
+                <motion.span
+                  layoutId="hovered-span"
+                  className="absolute inset-0 rounded-lg bg-white/20 backdrop-blur-sm"
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10">{item.title}</span>
+            </Link>
 
           ))}
         </div>
@@ -137,7 +137,7 @@ export function Navbar({
           <div className="hidden md:block">
             <AuthButton user={user} />
           </div>
-          
+
           <motion.button
             aria-label="Toggle mobile menu"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -177,34 +177,33 @@ export function Navbar({
             >
               <div className="flex flex-col p-6 space-y-6">
                 {/* Navigation Links */}
-                <div className="space-y-2">
-                 {/*  <h3 className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">
+                  <h3 className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">
                     Navigation
-                  </h3> */}
+                  </h3>
                   {navItems.map((item, idx) => (
-<Link
-  key={idx}
-  href={item.href}
-  onMouseEnter={() => setHovered(idx)}
-  onMouseLeave={() => setHovered(null)}
-  className={`relative px-4 py-2 text-sm font-medium transition-all duration-200 rounded-lg
-    ${item.highlight
-      ? 'bg-white text-blue-700 hover:bg-gray-100 shadow-md'
-      : 'text-white/90 hover:text-white'
-    }`}
->
-  {hovered === idx && !item.highlight && (
-    <motion.span
-      layoutId="hovered-span"
-      className="absolute inset-0 rounded-lg bg-white/20 backdrop-blur-sm"
-      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-    />
-  )}
-  <span className="relative z-10">{item.title}</span>
-</Link>
+                    <Link
+                      key={idx}
+                      href={item.href}
+                      onMouseEnter={() => setHovered(idx)}
+                      onMouseLeave={() => setHovered(null)}
+                      className={`relative  py-2 text-sm font-medium transition-all duration-200 rounded-lg
+                        ${item.highlight
+                          ? 'bg-white text-blue-700 hover:bg-gray-100 shadow-md'
+                          : 'text-white/90 hover:text-white'
+                        }`}
+                    >
+                      {hovered === idx && !item.highlight && (
+                        <motion.span
+                          layoutId="hovered-span"
+                          className="absolute inset-0 rounded-lg bg-white/20 backdrop-blur-sm"
+                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        />
+                      )}
+                      <span className="relative z-10">{item.title}</span>
+                    </Link>
 
                   ))}
-                </div>
+
 
                 {/* User Actions */}
                 <div className="pt-4 border-t border-white/20 space-y-3">

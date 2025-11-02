@@ -11,8 +11,8 @@ export default function HomePage() {
     <>
       <Hero />
       <MunEventsSection/>
-      <EventSchedule />
       <EventCard />
+      <EventSchedule />
       <FAQ/>
       <main className="pt-20">
         {/* Other homepage sections or routed children can go here */}
