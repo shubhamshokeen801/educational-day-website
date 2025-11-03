@@ -16,14 +16,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-white dark:bg-black transition-colors duration-300">
-        {/* All pages will render inside this */}
+      <body className="transition-colors duration-300">
         <Navbar />
         <UserProvider>
         {children}
         </UserProvider>
         <Footer />
-        <Toaster richColors position="bottom-right" />
+        <Toaster richColors position="top-center" />
       </body>
     </html>
   );

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useRef } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { createClient } from '@/app/lib/supabaseClient';
-import { Button } from '@/components/ui/button';
-import { Loader2, UserCircle } from 'lucide-react';
-import { toast } from 'sonner';
-import Link from 'next/link';
+import { useEffect, useState, useRef } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { createClient } from "@/app/lib/supabaseClient";
+import { Button } from "@/components/ui/button";
+import { Loader2, LogOut, UserCircle } from "lucide-react";
+import { toast } from "sonner";
+import Link from "next/link";
 
 export function AuthButton({ user: initialUser }: { user?: any }) {
   const router = useRouter();
@@ -24,7 +24,7 @@ export function AuthButton({ user: initialUser }: { user?: any }) {
         setLoading(false);
         return;
       }
-      
+
       const { data } = await supabase.auth.getUser();
       if (data?.user) {
         setUser(data.user);
@@ -38,19 +38,21 @@ export function AuthButton({ user: initialUser }: { user?: any }) {
 
     const { data: subscription } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_IN') {
+        if (event === "SIGNED_IN") {
           setUser(session?.user ?? null);
 
           if (!hasWelcomed.current) {
             hasWelcomed.current = true;
-            toast.success(`Welcome, ${session?.user?.user_metadata?.full_name || 'User'}!`);
+            toast.success(
+              `Welcome, ${session?.user?.user_metadata?.full_name || "User"}!`
+            );
           }
 
           router.refresh();
-        } else if (event === 'SIGNED_OUT') {
+        } else if (event === "SIGNED_OUT") {
           hasWelcomed.current = false;
           setUser(null);
-          toast("You've been logged out.", { description: 'Come back soon!' });
+          toast("You've been logged out.", { description: "Come back soon!" });
           router.refresh();
         }
       }
@@ -62,20 +64,22 @@ export function AuthButton({ user: initialUser }: { user?: any }) {
   const handleLogin = async () => {
     try {
       setLoading(true);
-      toast.loading('Redirecting to Google...');
-      
+      toast.loading("Redirecting to Google...");
+
       // Get current page path and search params
       const currentUrl = `${pathname}${window.location.search}`;
-      
+
       await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { 
-          redirectTo: `${location.origin}/api/auth/callback?next=${encodeURIComponent(currentUrl)}` 
+        provider: "google",
+        options: {
+          redirectTo: `${
+            location.origin
+          }/api/auth/callback?next=${encodeURIComponent(currentUrl)}`,
         },
       });
     } catch (err) {
-      console.error('Login error:', err);
-      toast.error('Login failed. Try again.');
+      console.error("Login error:", err);
+      toast.error("Login failed. Try again.");
       setLoading(false);
     }
   };
@@ -84,7 +88,7 @@ export function AuthButton({ user: initialUser }: { user?: any }) {
     try {
       setLoading(true);
       await supabase.auth.signOut();
-      toast.success('Successfully logged out.');
+      toast.success("Successfully logged out.");
       setUser(null);
       router.refresh();
     } finally {
@@ -104,28 +108,33 @@ export function AuthButton({ user: initialUser }: { user?: any }) {
     const displayName =
       user.user_metadata?.full_name ||
       user.user_metadata?.name ||
-      user.email?.split('@')[0] ||
-      'User';
+      user.email?.split("@")[0] ||
+      "User";
 
     return (
       <div className="flex items-center gap-2">
         <Link href="/profile">
-          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer">
-            <UserCircle className="w-4 h-4 mr-2" />
+          <Button
+            variant="outline"
+            className="cursor-pointer text-indigo-600 hover:bg-linear-to-b from-blue-600 to-indigo-700 hover:text-white transition-all duration-300 ease-linear">
+            <UserCircle className="w-4 h-4" />
             Profile
           </Button>
         </Link>
         <Button
           onClick={handleLogout}
           disabled={loading}
-          className="bg-red-500 hover:bg-red-600 text-white hidden md:flex cursor-pointer"
-        >
+          variant="destructive"
+          className="text-white hidden md:flex cursor-pointer">
           {loading ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Logging out...
+              <Loader2 className="w-4 h-4 animate-spin" /> Logging out...
             </>
           ) : (
-            <>Logout</>
+            <>
+              {" "}
+              <LogOut className="w-4 h-4" /> Logout
+            </>
           )}
         </Button>
       </div>
@@ -134,10 +143,10 @@ export function AuthButton({ user: initialUser }: { user?: any }) {
 
   return (
     <Button
+      variant="outline"
       onClick={handleLogin}
       disabled={loading}
-      className="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
-    >
+      className="cursor-pointer bg-linear-to-b from-blue-600 to-indigo-700 text-white hover:text-pink-500 transition-all duration-300 ease-linear">
       {loading ? (
         <>
           <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Redirecting...
