@@ -43,7 +43,7 @@ const staticEvents: StaticEvent[] = [
     date: "12th Nov",
     time: "2:00 PM - 4:00 PM",
     activity: "Session 1",
-    venue: "AIPPM - Hall A, UNGA - Hall B, UNHRC - Hall C",
+    venue: "AIPPM - Prasar Kendra, WHO - Seminar Hall, IP - Delphi Hall",
     category: "MUN",
   },
   {
@@ -59,7 +59,7 @@ const staticEvents: StaticEvent[] = [
     date: "12th Nov",
     time: "4:15 PM - 6:00 PM",
     activity: "Session 2",
-    venue: "AIPPM - Hall A, UNGA - Hall B, UNHRC - Hall C",
+    venue: "AIPPM - Prasar Kendra, WHO - Seminar Hall, IP - Delphi Hall",
     category: "MUN",
   },
   {
@@ -83,13 +83,13 @@ const staticEvents: StaticEvent[] = [
     date: "13th Nov",
     time: "1:30 PM - 3:30 PM",
     activity: "Session 1",
-    venue: "AIPPM - Hall A, UNGA - Hall B, UNHRC - Hall C",
+    venue: "AIPPM - Prasar Kendra, WHO - Seminar Hall, IP - Delphi Hall",
     category: "MUN",
   },
   {
     id: "mun-9",
     date: "13th Nov",
-    time: "3:30 PM - 3:43 PM",
+    time: "3:30 PM - 3:45 PM",
     activity: "Refreshment",
     venue: "Reception Area",
     category: "MUN",
@@ -99,7 +99,7 @@ const staticEvents: StaticEvent[] = [
     date: "13th Nov",
     time: "3:45 PM - 5:30 PM",
     activity: "Session 2",
-    venue: "AIPPM - Hall A, UNGA - Hall B, UNHRC - Hall C",
+    venue: "AIPPM - Prasar Kendra, WHO - Seminar Hall, IP - Delphi Hall",
     category: "MUN",
   },
   {
@@ -123,7 +123,7 @@ const staticEvents: StaticEvent[] = [
     id: "tech-1",
     date: "12th Nov",
     time: "2:00 PM",
-    activity: "Nukkad Natak",
+    activity: "Rangmanch",
     venue: "",
     category: "Tech Fest",
   },
@@ -228,7 +228,7 @@ export default function EventSchedule() {
                 <tr className="bg-indigo-50 dark:bg-indigo-950/50">
                   <td colSpan={3} className="px-6 py-3">
                     <span className="text-base font-bold text-indigo-700 dark:text-indigo-300">
-                      Day 1 - 12 Nov
+                      Day 1 - 12 November
                     </span>
                   </td>
                 </tr>
@@ -260,15 +260,15 @@ export default function EventSchedule() {
                           <div className="flex flex-col gap-1.5 text-sm text-gray-500 dark:text-gray-400">
                             <div className="flex items-center gap-2">
                               <MapPin className="w-4 h-4 text-gray-400" />
-                              <span>AIPPM - Hall A</span>
+                              <span>AIPPM - Prasar Kendra</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <MapPin className="w-4 h-4 text-gray-400" />
-                              <span>UNGA - Hall B</span>
+                              <span>WHO - Seminar Hall</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <MapPin className="w-4 h-4 text-gray-400" />
-                              <span>UNHRC - Hall C</span>
+                              <span>IP - Delphi Hall</span>
                             </div>
                           </div>
                         ) : (
@@ -284,7 +284,7 @@ export default function EventSchedule() {
                 <tr className="bg-indigo-50 dark:bg-indigo-950/50">
                   <td colSpan={3} className="px-6 py-3">
                     <span className="text-base font-bold text-indigo-700 dark:text-indigo-300">
-                      Day 2 - 13 Nov
+                      Day 2 - 13 November
                     </span>
                   </td>
                 </tr>
@@ -322,15 +322,15 @@ export default function EventSchedule() {
                           <div className="flex flex-col gap-1.5 text-sm text-gray-500 dark:text-gray-400">
                             <div className="flex items-center gap-2">
                               <MapPin className="w-4 h-4 text-gray-400" />
-                              <span>AIPPM - Hall A</span>
+                              <span>AIPPM - Prasar Kendra</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <MapPin className="w-4 h-4 text-gray-400" />
-                              <span>UNGA - Hall B</span>
+                              <span>WHO - Seminar Hall</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <MapPin className="w-4 h-4 text-gray-400" />
-                              <span>UNHRC - Hall C</span>
+                              <span>IP - Delphi Hall</span>
                             </div>
                           </div>
                         ) : (
@@ -358,7 +358,7 @@ export default function EventSchedule() {
                 <tr className="bg-pink-50 dark:bg-pink-950/50">
                   <td colSpan={3} className="px-6 py-3">
                     <span className="text-base font-bold text-pink-700 dark:text-pink-300">
-                      Day 1 - 12 Nov
+                      Day 1 - 12 November
                     </span>
                   </td>
                 </tr>
@@ -397,7 +397,7 @@ export default function EventSchedule() {
                 <tr className="bg-pink-50 dark:bg-pink-950/50">
                   <td colSpan={3} className="px-6 py-3">
                     <span className="text-base font-bold text-pink-700 dark:text-pink-300">
-                      Day 2 - 13 Nov
+                      Day 2 - 13 November
                     </span>
                   </td>
                 </tr>
@@ -519,19 +519,19 @@ export default function EventSchedule() {
                                     <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/20 px-3 py-2 rounded-lg">
                                       <MapPin className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                                       <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                        AIPPM - Hall A
+                                        AIPPM - Prasar Kendra
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/20 px-3 py-2 rounded-lg">
                                       <MapPin className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                                       <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                        UNGA - Hall B
+                                        WHO - Seminar Hall
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/20 px-3 py-2 rounded-lg">
                                       <MapPin className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                                       <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                        UNHRC - Hall C
+                                        IP - Delphi Hall
                                       </span>
                                     </div>
                                   </div>

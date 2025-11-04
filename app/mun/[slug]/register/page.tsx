@@ -134,10 +134,7 @@ export default async function MUNRegisterPage({ params }: { params: Promise<{ sl
                   12 and 13 Nov 2025
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {eventDate.toLocaleTimeString('en-US', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
+                  12:30 PM Onwards
                 </p>
               </div>
 

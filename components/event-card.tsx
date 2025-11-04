@@ -162,7 +162,7 @@ export default function EventCard() {
                   )}
 
                   {!event.is_paid && (
-                    <div className="mb-4 pb-4 border-b border-gray-100 dark:border-gray-800">
+                    <div className="mb-4 pb-4 ">
                       <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-800">
                         <span className="text-sm font-bold text-blue-700 dark:text-blue-300">
                           Free Event

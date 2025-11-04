@@ -324,66 +324,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* SOLO REGISTRATIONS */}
-        {soloRegistrations.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-indigo-500 p-2 rounded-lg">
-                <User className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                Solo Registrations
-              </h2>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {soloRegistrations.map((reg: any) => (
-                <div
-                  key={reg.id}
-                  className="bg-white dark:bg-gray-800 rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300"
-                >
-                  <div className="flex items-start justify-between mb-3 gap-3">
-                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">
-                      {reg.events?.name}
-                    </h3>
-                    {getPaymentStatusBadge(reg.payment_status, reg.id, false, reg.events?.is_paid)}
-                  </div>
-                  {reg.events?.description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                      {reg.events.description}
-                    </p>
-                  )}
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                      <Calendar className="w-4 h-4 text-indigo-500" />
-                      <span>
-                        {new Date(reg.events?.start_date).toLocaleString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </span>
-                    </div>
-                    {reg.events?.is_paid && reg.events?.registration_fee && (
-                      <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                        <CreditCard className="w-4 h-4 text-green-500" />
-                        <span className="font-semibold">Fee: ₹{reg.events.registration_fee}</span>
-                      </div>
-                    )}
-                    {reg.phone_number && (
-                      <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                        <Phone className="w-4 h-4 text-indigo-500" />
-                        <span>{reg.phone_number}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* MUN REGISTRATIONS */}
         {munRegistrations.length > 0 && (
           <div className="mb-8">
@@ -416,13 +356,7 @@ export default function ProfilePage() {
                     <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                       <Calendar className="w-4 h-4 text-pink-500" />
                       <span>
-                        {new Date(reg.mun_events?.event_datetime).toLocaleString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                        12 and 13 Nov 2025, 12:30 PM Onwards
                       </span>
                     </div>
                     {reg.mun_events?.registration_fee && (
@@ -443,6 +377,66 @@ export default function ProfilePage() {
             </div>
           </div>
         )}
+        {/* SOLO REGISTRATIONS */}
+        {soloRegistrations.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-indigo-500 p-2 rounded-lg">
+                <User className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                Solo Registrations
+              </h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {soloRegistrations.map((reg: any) => (
+                <div
+                  key={reg.id}
+                  className="bg-white dark:bg-gray-800 rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="flex items-start justify-between mb-3 gap-3">
+                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                      {reg.events?.name}
+                    </h3>
+                    {getPaymentStatusBadge(reg.payment_status, reg.id, false, reg.events?.is_paid)}
+                  </div>
+                  {reg.events?.description && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                      {reg.events.description}
+                    </p>
+                  )}
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                      <Calendar className="w-4 h-4 text-indigo-500" />
+                      <span>
+                        {new Date(reg.events?.event_datetime).toLocaleString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                    {reg.events?.is_paid && reg.events?.registration_fee && (
+                      <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                        <CreditCard className="w-4 h-4 text-green-500" />
+                        <span className="font-semibold">Fee: ₹{reg.events.registration_fee}</span>
+                      </div>
+                    )}
+                    {reg.phone_number && (
+                      <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                        <Phone className="w-4 h-4 text-indigo-500" />
+                        <span>{reg.phone_number}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
 
         {/* TEAM REGISTRATIONS */}
         {teamMemberships.length > 0 && (
@@ -492,7 +486,7 @@ export default function ProfilePage() {
                           <div className="flex items-center gap-2">
                             <Calendar className="w-4 h-4 text-purple-500" />
                             <span>
-                              {new Date(tm.teams?.events?.start_date).toLocaleString('en-US', {
+                              {new Date(tm.teams?.events?.event_datetime).toLocaleString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
                                 year: 'numeric',

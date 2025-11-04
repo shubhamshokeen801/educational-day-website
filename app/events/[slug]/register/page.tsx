@@ -65,7 +65,7 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
     );
   }
 
-  const startDate = new Date(event.start_date);
+  const startDate = new Date(event.event_datetime);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-purple-950 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
