@@ -4,8 +4,7 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Award, ArrowRight, Calendar, Users2, Globe2, Sparkles, IndianRupee, Scroll } from "lucide-react";
-
+import { Award, ArrowRight, Calendar, Users2, Globe2, Sparkles, IndianRupee, Scroll, Speaker, Soup, FileBadge, Trophy , UserStar  } from "lucide-react";
 interface MUNEvent {
   id: string;
   name: string;
@@ -125,18 +124,11 @@ const MunSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="inline-flex items-center gap-2 bg-purple-100 dark:bg-purple-900/30 px-4 py-2 rounded-full mb-4 sm:mb-6">
-              <Award className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400" />
-              <span className="text-xs sm:text-sm font-semibold text-purple-600 dark:text-purple-400">Model United Nations</span>
-            </div>
             
             <h2 className="text-3xl sm:text-4xl py-2 lg:text-5xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 bg-clip-text text-transparent mb-3 sm:mb-4">
               BVICAM MUN 2025
             </h2>
-            
-            <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 mb-6">
-              Step into the world of diplomacy, debate, and dialogue at our flagship TechMedia Fest
-            </p>
+          
 
             {/* Marquee Text */}
             <div className="relative overflow-hidden py-3 mb-6">
@@ -150,6 +142,91 @@ const MunSection = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Perks Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="mt-8 mb-6"
+            >
+              <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50 dark:from-purple-900/20 dark:via-pink-900/20 dark:to-indigo-900/20 rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-2 border-purple-200 dark:border-purple-800 shadow-lg">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400" />
+                  <h3 className="text-xl sm:text-2xl font-bold text-purple-900 dark:text-purple-100">
+                    Event Perks
+                  </h3>
+                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-left">
+                  <div className="flex items-start gap-3 bg-white/50 dark:bg-neutral-800/50 p-3 sm:p-4 rounded-xl backdrop-blur-sm">
+                    <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                      <FileBadge className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200">
+                        Certification for all Participants
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 bg-white/50 dark:bg-neutral-800/50 p-3 sm:p-4 rounded-xl backdrop-blur-sm">
+                    <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                      <Award className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200">
+                        Exclusive Delegate Kits
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 bg-white/50 dark:bg-neutral-800/50 p-3 sm:p-4 rounded-xl backdrop-blur-sm">
+                    <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-pink-500 to-rose-500 rounded-lg flex items-center justify-center">
+                      <Soup className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200">
+                        Exquisite meals and refreshments
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 bg-white/50 dark:bg-neutral-800/50 p-3 sm:p-4 rounded-xl backdrop-blur-sm">
+                    <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-pink-500 to-rose-500 rounded-lg flex items-center justify-center">
+                      <Speaker className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200">
+                        Two days DJ Socials
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 bg-white/50 dark:bg-neutral-800/50 p-3 sm:p-4 rounded-xl backdrop-blur-sm">
+                    <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-violet-500 to-purple-500 rounded-lg flex items-center justify-center">
+                      <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200">
+                        Trophies and Attractive CP for the winners
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3 bg-white/50 dark:bg-neutral-800/50 p-3 sm:p-4 rounded-xl backdrop-blur-sm">
+                    <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-violet-500 to-purple-500 rounded-lg flex items-center justify-center">
+                      <UserStar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200">
+                        Delegate under experienced chair person
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
 
         {/* Event Cards */}
         {munEvents.length > 0 && (
