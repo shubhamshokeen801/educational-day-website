@@ -82,12 +82,57 @@ export default function EventSchedule() {
                     </div>
                   </td>
                 </tr>
-                {munEvents.map((event, i) => (
+                {/* Day 1 Heading */}
+                <tr className="bg-indigo-50 dark:bg-indigo-950/50">
+                  <td colSpan={4} className="px-4 py-3">
+                    <span className="text-base font-bold text-indigo-700 dark:text-indigo-300">Day 1</span>
+                  </td>
+                </tr>
+                {munEvents.filter(e => e.date === "12th Nov").map((event, i) => (
                   <motion.tr
                     key={event.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
+                    className="hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors"
+                  >
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                        <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                        <span className="font-medium">{event.date}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                        <Clock className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+                        <span>{event.time}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <p className="font-bold text-gray-900 dark:text-gray-100">{event.activity}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <MapPin className="w-4 h-4 text-gray-400" />
+                        <span>{event.venue || "—"}</span>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))}
+                {/* Day 2 Heading */}
+                <tr className="bg-indigo-50 dark:bg-indigo-950/50">
+                  <td colSpan={4} className="px-4 py-3">
+                    <span className="text-base font-bold text-indigo-700 dark:text-indigo-300">Day 2</span>
+                  </td>
+                </tr>
+                {munEvents.filter(e => e.date === "13th Nov").map((event, i) => (
+                  <motion.tr
+                    key={event.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: (munEvents.filter(e => e.date === "12th Nov").length + i) * 0.05 }}
                     className="hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors"
                   >
                     <td className="px-4 py-4">

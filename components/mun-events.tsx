@@ -229,7 +229,7 @@ const MunSection = () => {
                         
                         {event.registration_fee && (
                           <div className="flex items-center gap-2 text-xs sm:text-sm">
-                            <IndianRupee className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                            Registration Fee:
                             <span className="text-gray-700 dark:text-gray-300 font-medium">
                               ₹{event.registration_fee}
                             </span>

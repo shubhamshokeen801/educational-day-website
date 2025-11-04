@@ -1,7 +1,6 @@
 import { createServerClientInstance } from "@/app/lib/supabaseServerClient";
 import RegisterFormClient from "./RegisterFormClient";
-import { Calendar, Users, User, XCircle, Info, Sparkles, DollarSign } from "lucide-react";
-
+import { Calendar, Users, User, XCircle, Info, Sparkles, DollarSign,IndianRupee } from "lucide-react";
 // Helper function to create URL-friendly slug from name
 function createSlug(name: string): string {
   return name
@@ -99,7 +98,7 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
               {/* Fee Badge */}
               {event.is_paid && event.registration_fee ? (
                 <div className="bg-green-500 text-white text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-lg flex items-center gap-1.5 sm:gap-2 backdrop-blur-sm">
-                  <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  Fee:
                   ₹{event.registration_fee}
                 </div>
               ) : (
@@ -156,7 +155,7 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
                 <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-4 sm:p-5 border border-green-100 dark:border-green-800">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="bg-green-500 p-2 sm:p-2.5 rounded-xl">
-                      <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                      <IndianRupee className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
                     <span className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">Registration Fee</span>
                   </div>

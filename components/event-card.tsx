@@ -153,7 +153,6 @@ export default function EventCard() {
                   {event.is_paid && event.registration_fee && (
                     <div className="mb-4 pb-4 border-b border-gray-100 dark:border-gray-800">
                       <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 px-3 py-2 rounded-lg border border-green-200 dark:border-green-800">
-                        <DollarSign className="w-4 h-4 text-green-600 dark:text-green-400" />
                         <span className="text-sm font-bold text-green-700 dark:text-green-300">
                           ₹{event.registration_fee}
                         </span>
@@ -165,7 +164,6 @@ export default function EventCard() {
                   {!event.is_paid && (
                     <div className="mb-4 pb-4 border-b border-gray-100 dark:border-gray-800">
                       <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         <span className="text-sm font-bold text-blue-700 dark:text-blue-300">
                           Free Event
                         </span>
