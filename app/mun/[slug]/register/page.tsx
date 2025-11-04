@@ -11,6 +11,22 @@ function generateSlug(name: string): string {
     .replace(/(^-|-$)/g, '');
 }
 
+// Helper function to get full form of event name
+function getEventFullForm(name: string, slug: string): string {
+  const slugLower = slug.toLowerCase();
+  
+  if (slugLower.includes('who')) {
+    return 'World Health Organization';
+  } else if (slugLower.includes('aippm')) {
+    return 'All India Political Parties Meet';
+  } else if (slugLower.includes('ip') || slugLower.includes('press')) {
+    return 'International Press';
+  }
+  
+  // Return original name if no match
+  return name;
+}
+
 export default async function MUNRegisterPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   
@@ -62,6 +78,7 @@ export default async function MUNRegisterPage({ params }: { params: Promise<{ sl
   }
 
   const eventDate = new Date(munEvent.event_datetime);
+  const eventFullForm = getEventFullForm(munEvent.name, slug);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-purple-950 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
@@ -94,7 +111,7 @@ export default async function MUNRegisterPage({ params }: { params: Promise<{ sl
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-2 sm:mb-3 drop-shadow-lg">
-                {munEvent.name}
+                {eventFullForm}
               </h1>
               <p className="text-sm sm:text-base lg:text-lg text-gray-200 max-w-3xl line-clamp-2">
                 {munEvent.description}
@@ -114,11 +131,7 @@ export default async function MUNRegisterPage({ params }: { params: Promise<{ sl
                   <span className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">Date & Time</span>
                 </div>
                 <p className="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-200">
-                  {eventDate.toLocaleDateString('en-US', { 
-                    month: 'long', 
-                    day: 'numeric', 
-                    year: 'numeric' 
-                  })}
+                  12 and 13 Nov 2025
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {eventDate.toLocaleTimeString('en-US', { 

@@ -154,7 +154,7 @@ const MunSection = () => {
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400" />
                   <h3 className="text-xl sm:text-2xl font-bold text-purple-900 dark:text-purple-100">
-                    Event Perks
+                    MUN Perks
                   </h3>
                   <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400" />
                 </div>
@@ -166,7 +166,7 @@ const MunSection = () => {
                     </div>
                     <div>
                       <p className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200">
-                        Certification for all Participants
+                        Certification for All Participants
                       </p>
                     </div>
                   </div>
@@ -187,7 +187,7 @@ const MunSection = () => {
                     </div>
                     <div>
                       <p className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200">
-                        Exquisite meals and refreshments
+                        Exquisite Meals and Refreshments
                       </p>
                     </div>
                   </div>
@@ -198,7 +198,7 @@ const MunSection = () => {
                     </div>
                     <div>
                       <p className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200">
-                        Two days DJ Socials
+                        Two Days DJ Socials
                       </p>
                     </div>
                   </div>
@@ -209,7 +209,7 @@ const MunSection = () => {
                     </div>
                     <div>
                       <p className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200">
-                        Trophies and Attractive CP for the winners
+                        Trophies and Attractive Cash Prizes for the Winners
                       </p>
                     </div>
                   </div>
@@ -220,7 +220,7 @@ const MunSection = () => {
                     </div>
                     <div>
                       <p className="text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200">
-                        Delegate under experienced chair person
+                        Delegate Under Experienced Chair Person
                       </p>
                     </div>
                   </div>
@@ -300,7 +300,7 @@ const MunSection = () => {
                         <div className="flex items-center gap-2 text-xs sm:text-sm">
                           <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
                           <span className="text-gray-700 dark:text-gray-300 font-medium">
-                            {formattedDate}
+                            12 and 13 Nov 2025
                           </span>
                         </div>
                         
