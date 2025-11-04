@@ -437,7 +437,7 @@ export default function ProfilePage() {
                     </p>
                   )}
                   <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                    {/* <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                       <Calendar className="w-4 h-4 text-indigo-500" />
                       <span>
                         {new Date(
@@ -448,7 +448,7 @@ export default function ProfilePage() {
                           year: "numeric",
                         })}
                       </span>
-                    </div>
+                    </div> */}
                     {reg.events?.is_paid && reg.events?.registration_fee && (
                       <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                         <CreditCard className="w-4 h-4 text-green-500" />
@@ -515,7 +515,7 @@ export default function ProfilePage() {
                               {tm.teams?.team_code}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2">
+                          {/* <div className="flex items-center gap-2">
                             <Calendar className="w-4 h-4 text-purple-500" />
                             <span>
                               {new Date(
@@ -528,7 +528,7 @@ export default function ProfilePage() {
                                 minute: "2-digit",
                               })}
                             </span>
-                          </div>
+                          </div> */}
                           {tm.teams?.events?.is_paid &&
                             tm.teams?.events?.registration_fee && (
                               <div className="flex items-center gap-2">
