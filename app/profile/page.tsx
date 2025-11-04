@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { createClient } from '@/app/lib/supabaseClient';
+import { useEffect, useState } from "react";
+import { createClient } from "@/app/lib/supabaseClient";
 import {
   User,
   Mail,
@@ -19,8 +19,8 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -32,7 +32,9 @@ export default function ProfilePage() {
   const [teamMemberships, setTeamMemberships] = useState<any[]>([]);
   const [munRegistrations, setMunRegistrations] = useState<any[]>([]);
   const [uploadingFor, setUploadingFor] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
+  const [uploadProgress, setUploadProgress] = useState<{
+    [key: string]: number;
+  }>({});
 
   useEffect(() => {
     loadProfile();
@@ -43,15 +45,15 @@ export default function ProfilePage() {
       setLoading(true);
 
       // Fetch profile data from API
-      const res = await fetch('/api/profile');
+      const res = await fetch("/api/profile");
       const data = await res.json();
 
       if (!res.ok) {
         if (res.status === 401) {
-          router.push('/');
+          router.push("/");
           return;
         }
-        throw new Error(data.error || 'Failed to load profile');
+        throw new Error(data.error || "Failed to load profile");
       }
 
       setUser(data.user);
@@ -59,7 +61,7 @@ export default function ProfilePage() {
       setTeamMemberships(data.teamMemberships || []);
       setMunRegistrations(data.munRegistrations || []);
     } catch (error) {
-      console.error('Error loading profile:', error);
+      console.error("Error loading profile:", error);
     } finally {
       setLoading(false);
     }
@@ -67,28 +69,36 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/');
+    router.push("/");
   };
 
-  const handlePaymentUpload = async (registrationId: string, isMun: boolean = false) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/jpeg,image/jpg,image/png,image/webp';
-    
+  const handlePaymentUpload = async (
+    registrationId: string,
+    isMun: boolean = false
+  ) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/jpeg,image/jpg,image/png,image/webp";
+
     input.onchange = async (e: any) => {
       const file = e.target.files?.[0];
       if (!file) return;
 
       // Validate file size (5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB');
+        alert("File size must be less than 5MB");
         return;
       }
 
       // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/webp",
+      ];
       if (!allowedTypes.includes(file.type)) {
-        alert('Only image files (JPEG, PNG, WebP) are allowed');
+        alert("Only image files (JPEG, PNG, WebP) are allowed");
         return;
       }
 
@@ -97,33 +107,33 @@ export default function ProfilePage() {
         setUploadProgress({ ...uploadProgress, [registrationId]: 0 });
 
         const formData = new FormData();
-        formData.append('registrationId', registrationId);
-        formData.append('paymentProof', file);
+        formData.append("registrationId", registrationId);
+        formData.append("paymentProof", file);
 
-        const endpoint = isMun ? '/api/mun/payment' : '/api/events/payment';
-        
+        const endpoint = isMun ? "/api/mun/payment" : "/api/events/payment";
+
         setUploadProgress({ ...uploadProgress, [registrationId]: 50 });
 
         const res = await fetch(endpoint, {
-          method: 'POST',
+          method: "POST",
           body: formData,
         });
 
         const data = await res.json();
 
         if (!res.ok) {
-          throw new Error(data.error || 'Failed to upload payment proof');
+          throw new Error(data.error || "Failed to upload payment proof");
         }
 
         setUploadProgress({ ...uploadProgress, [registrationId]: 100 });
-        
-        alert(data.message || 'Payment proof uploaded successfully!');
-        
+
+        alert(data.message || "Payment proof uploaded successfully!");
+
         // Reload profile to reflect updated payment status
         await loadProfile();
       } catch (error: any) {
-        console.error('Error uploading payment:', error);
-        alert(error.message || 'Failed to upload payment proof');
+        console.error("Error uploading payment:", error);
+        alert(error.message || "Failed to upload payment proof");
       } finally {
         setUploadingFor(null);
         setUploadProgress({ ...uploadProgress, [registrationId]: 0 });
@@ -133,7 +143,12 @@ export default function ProfilePage() {
     input.click();
   };
 
-  const getPaymentStatusBadge = (status: string | null | undefined, registrationId?: string, isMun: boolean = false, eventIsPaid: boolean = true) => {
+  const getPaymentStatusBadge = (
+    status: string | null | undefined,
+    registrationId?: string,
+    isMun: boolean = false,
+    eventIsPaid: boolean = true
+  ) => {
     // Don't show anything for free events
     if (!eventIsPaid) {
       return (
@@ -144,14 +159,14 @@ export default function ProfilePage() {
     }
 
     switch (status) {
-      case 'approved':
-      case 'verified':
+      case "approved":
+      case "verified":
         return (
           <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 flex items-center gap-1">
             <CheckCircle className="w-3 h-3" /> Payment Verified
           </span>
         );
-      case 'pending':
+      case "pending":
         return (
           <div className="flex flex-col gap-2">
             <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300 flex items-center gap-1">
@@ -178,7 +193,7 @@ export default function ProfilePage() {
             )}
           </div>
         );
-      case 'rejected':
+      case "rejected":
         return (
           <div className="flex flex-col gap-2">
             <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 flex items-center gap-1">
@@ -240,7 +255,9 @@ export default function ProfilePage() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-indigo-600 mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">Loading your profile...</p>
+          <p className="text-gray-600 dark:text-gray-400">
+            Loading your profile...
+          </p>
         </div>
       </div>
     );
@@ -251,11 +268,13 @@ export default function ProfilePage() {
   const displayName =
     user.user_metadata?.full_name ||
     user.user_metadata?.name ||
-    user.email?.split('@')[0] ||
-    'User';
-  const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+    user.email?.split("@")[0] ||
+    "User";
+  const avatarUrl =
+    user.user_metadata?.avatar_url || user.user_metadata?.picture;
 
-  const totalRegistrations = soloRegistrations.length + teamMemberships.length + munRegistrations.length;
+  const totalRegistrations =
+    soloRegistrations.length + teamMemberships.length + munRegistrations.length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8 pt-25 px-4 sm:px-6 lg:px-8 ">
@@ -303,11 +322,13 @@ export default function ProfilePage() {
                   {totalRegistrations} Events Registered
                 </span>
                 <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
-                  {teamMemberships.length} Team{teamMemberships.length !== 1 ? 's' : ''}
+                  {teamMemberships.length} Team
+                  {teamMemberships.length !== 1 ? "s" : ""}
                 </span>
                 {munRegistrations.length > 0 && (
                   <span className="px-3 py-1 bg-pink-100 dark:bg-pink-900 text-pink-700 dark:text-pink-300 rounded-full text-xs font-medium">
-                    {munRegistrations.length} MUN Event{munRegistrations.length !== 1 ? 's' : ''}
+                    {munRegistrations.length} MUN Event
+                    {munRegistrations.length !== 1 ? "s" : ""}
                   </span>
                 )}
               </div>
@@ -345,7 +366,12 @@ export default function ProfilePage() {
                     <h3 className="font-bold text-lg text-gray-900 dark:text-white">
                       {reg.mun_events?.name}
                     </h3>
-                    {getPaymentStatusBadge(reg.payment_status, reg.id, true, reg.mun_events?.is_paid)}
+                    {getPaymentStatusBadge(
+                      reg.payment_status,
+                      reg.id,
+                      true,
+                      reg.mun_events?.is_paid
+                    )}
                   </div>
                   {reg.mun_events?.description && (
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
@@ -355,14 +381,14 @@ export default function ProfilePage() {
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                       <Calendar className="w-4 h-4 text-pink-500" />
-                      <span>
-                        12 and 13 Nov 2025, 12:30 PM Onwards
-                      </span>
+                      <span>12 and 13 Nov 2025, 12:30 PM Onwards</span>
                     </div>
                     {reg.mun_events?.registration_fee && (
                       <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                         <CreditCard className="w-4 h-4 text-green-500" />
-                        <span className="font-semibold">Fee: ₹{reg.mun_events.registration_fee}</span>
+                        <span className="font-semibold">
+                          Fee: ₹{reg.mun_events.registration_fee}
+                        </span>
                       </div>
                     )}
                     {reg.phone_number && (
@@ -398,7 +424,12 @@ export default function ProfilePage() {
                     <h3 className="font-bold text-lg text-gray-900 dark:text-white">
                       {reg.events?.name}
                     </h3>
-                    {getPaymentStatusBadge(reg.payment_status, reg.id, false, reg.events?.is_paid)}
+                    {getPaymentStatusBadge(
+                      reg.payment_status,
+                      reg.id,
+                      false,
+                      reg.events?.is_paid
+                    )}
                   </div>
                   {reg.events?.description && (
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
@@ -409,19 +440,21 @@ export default function ProfilePage() {
                     <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                       <Calendar className="w-4 h-4 text-indigo-500" />
                       <span>
-                        {new Date(reg.events?.event_datetime).toLocaleString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
+                        {new Date(
+                          reg.events?.event_datetime
+                        ).toLocaleDateString("en-US", {
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
                         })}
                       </span>
                     </div>
                     {reg.events?.is_paid && reg.events?.registration_fee && (
                       <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                         <CreditCard className="w-4 h-4 text-green-500" />
-                        <span className="font-semibold">Fee: ₹{reg.events.registration_fee}</span>
+                        <span className="font-semibold">
+                          Fee: ₹{reg.events.registration_fee}
+                        </span>
                       </div>
                     )}
                     {reg.phone_number && (
@@ -437,7 +470,6 @@ export default function ProfilePage() {
           </div>
         )}
 
-
         {/* TEAM REGISTRATIONS */}
         {teamMemberships.length > 0 && (
           <div>
@@ -451,9 +483,9 @@ export default function ProfilePage() {
             </div>
             <div className="grid gap-6">
               {teamMemberships.map((tm: any) => {
-                const isLeader = tm.role === 'leader';
+                const isLeader = tm.role === "leader";
                 const teamReg = tm.registration;
-                
+
                 return (
                   <div
                     key={tm.id}
@@ -486,24 +518,36 @@ export default function ProfilePage() {
                           <div className="flex items-center gap-2">
                             <Calendar className="w-4 h-4 text-purple-500" />
                             <span>
-                              {new Date(tm.teams?.events?.event_datetime).toLocaleString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
+                              {new Date(
+                                tm.teams?.events?.event_datetime
+                              ).toLocaleString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
                               })}
                             </span>
                           </div>
-                          {tm.teams?.events?.is_paid && tm.teams?.events?.registration_fee && (
-                            <div className="flex items-center gap-2">
-                              <CreditCard className="w-4 h-4 text-green-500" />
-                              <span className="font-semibold">Fee: ₹{tm.teams?.events?.registration_fee}</span>
-                            </div>
-                          )}
+                          {tm.teams?.events?.is_paid &&
+                            tm.teams?.events?.registration_fee && (
+                              <div className="flex items-center gap-2">
+                                <CreditCard className="w-4 h-4 text-green-500" />
+                                <span className="font-semibold">
+                                  Fee: ₹{tm.teams?.events?.registration_fee}
+                                </span>
+                              </div>
+                            )}
                         </div>
                       </div>
-                      {isLeader && teamReg && getPaymentStatusBadge(teamReg.payment_status, teamReg.id, false, tm.teams?.events?.is_paid)}
+                      {isLeader &&
+                        teamReg &&
+                        getPaymentStatusBadge(
+                          teamReg.payment_status,
+                          teamReg.id,
+                          false,
+                          tm.teams?.events?.is_paid
+                        )}
                       {!isLeader && (
                         <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 self-start">
                           Team Member
@@ -527,15 +571,15 @@ export default function ProfilePage() {
                               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                                 {member.users?.name?.[0] ||
                                   member.users?.email?.[0]?.toUpperCase() ||
-                                  'U'}
+                                  "U"}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
                                   <p className="font-medium text-gray-900 dark:text-white text-sm truncate">
                                     {member.users?.name ||
-                                      member.users?.email?.split('@')[0]}
+                                      member.users?.email?.split("@")[0]}
                                   </p>
-                                  {member.role === 'leader' && (
+                                  {member.role === "leader" && (
                                     <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300 rounded text-xs font-medium">
                                       Leader
                                     </span>
@@ -574,7 +618,7 @@ export default function ProfilePage() {
               You haven't registered for any events. Start exploring!
             </p>
             <button
-              onClick={() => router.push('/#events')}
+              onClick={() => router.push("/#events")}
               className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
             >
               Browse Events
