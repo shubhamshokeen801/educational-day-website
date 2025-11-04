@@ -87,8 +87,8 @@ export function Navbar() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className={`fixed top-0 inset-x-0 mt-4 h-16 flex w-full items-center justify-between px-4 sm:px-6 lg:px-8 z-50 rounded-full mx-auto transition-all duration-300 ease-linear ${
           isScrolled
-            ? "max-w-[90%] bg-white shadow-md text-gray-900"
-            : "max-w-[95%] bg-transparent text-white"
+            ? "max-w-[90%] bg-white dark:bg-gray-900 shadow-md"
+            : "max-w-[95%] bg-transparent"
         }`}>
         {/* Logo and Title */}
         <Link href={"/"} className="flex items-center gap-2 md:gap-3 group">
@@ -111,19 +111,19 @@ export function Navbar() {
                 key={idx}
                 href={item.href}
                 onMouseEnter={() => setHovered(idx)}
-                className={`relative px-4 py-2 text-sm font-medium transition-all duration-200 rounded-lg ${
+                className={`relative px-4 py-2 text-sm font-semibold transition-all duration-200 rounded-lg ${
                   item.highlight
-                    ? "bg-white text-blue-700 hover:bg-gray-100 shadow-md"
+                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 shadow-md"
                     : isScrolled
-                    ? "text-gray-900 hover:text-gray-900"
-                    : "text-white/90 hover:text-white"
+                    ? "text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
+                    : "text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
                 }`}>
                 {hovered === idx && !item.highlight && (
                   <motion.span
                     layoutId="nav-hover-highlight"
                     className={`absolute inset-0 rounded-lg ${
                       isScrolled
-                        ? "bg-black/10"
+                        ? "bg-indigo-50 dark:bg-indigo-900/30"
                         : "bg-white/20 backdrop-blur-sm"
                     }`}
                     transition={{ type: "spring", stiffness: 380, damping: 28 }}
@@ -154,22 +154,22 @@ export function Navbar() {
           <motion.button
             aria-label="Toggle mobile menu"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`lg:hidden p-2  rounded-lg transition-colors border ${
+            className={`lg:hidden p-2 rounded-lg transition-colors border ${
               isScrolled
-                ? "bg-black/5 hover:bg-black/10 border-black/10"
+                ? "bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 border-indigo-200 dark:border-indigo-800"
                 : "bg-white/10 hover:bg-white/20 backdrop-blur-sm border-white/20"
             }`}
             whileTap={{ scale: 0.9 }}>
             {mobileMenuOpen ? (
               <X
                 className={`w-6 h-6 ${
-                  isScrolled ? "text-gray-900" : "text-white"
+                  isScrolled ? "text-indigo-600 dark:text-indigo-400" : "text-white"
                 }`}
               />
             ) : (
               <Menu
                 className={`w-6 h-6 ${
-                  isScrolled ? "text-gray-900" : "text-white"
+                  isScrolled ? "text-indigo-600 dark:text-indigo-400" : "text-white"
                 }`}
               />
             )}
@@ -177,7 +177,7 @@ export function Navbar() {
         </div>
       </motion.nav>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - Dropdown Style */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
@@ -191,48 +191,37 @@ export function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
             />
 
-            {/* Menu Panel */}
+            {/* Dropdown Menu Panel */}
             <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed top-16 md:top-20 right-0 bottom-0 w-72 bg-linear-to-b from-blue-600 to-indigo-700 dark:from-blue-900 dark:to-indigo-950 shadow-2xl z-50 lg:hidden overflow-y-auto">
-              <div className="flex flex-col p-6 space-y-6">
+              className="fixed top-20 right-4 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl z-50 lg:hidden overflow-hidden border border-gray-200 dark:border-gray-800">
+              <div className="flex flex-col p-4 max-h-[calc(100vh-6rem)] overflow-y-auto">
                 {/* Navigation Links */}
-                <h3 className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">
-                  Navigation
-                </h3>
-                {navItems.map((item, idx) => (
-                  <Link
-                    key={idx}
-                    href={item.href}
-                    onMouseEnter={() => setHovered(idx)}
-                    onMouseLeave={() => setHovered(null)}
-                    className={`relative  py-2 text-sm font-medium transition-all duration-200 rounded-lg
-                        ${
-                          item.highlight
-                            ? "bg-white text-blue-700 hover:bg-gray-100 shadow-md"
-                            : "text-white/90 hover:text-white"
-                        }`}>
-                    {hovered === idx && !item.highlight && (
-                      <motion.span
-                        layoutId="nav-hover-highlight"
-                        className="absolute inset-0 rounded-lg bg-white/20 backdrop-blur-sm"
-                        transition={{
-                          type: "spring",
-                          stiffness: 380,
-                          damping: 28,
-                        }}
-                      />
-                    )}
-                    <span className="relative z-10">{item.title}</span>
-                  </Link>
-                ))}
+                <div className="space-y-1 mb-4">
+                  <h3 className="px-3 py-2 text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase tracking-wider">
+                    Navigation
+                  </h3>
+                  {navItems.map((item, idx) => (
+                    <Link
+                      key={idx}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`block px-4 py-2.5 text-sm font-semibold transition-all duration-200 rounded-lg ${
+                        item.highlight
+                          ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 shadow-md"
+                          : "text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-700 dark:hover:text-indigo-300"
+                      }`}>
+                      {item.title}
+                    </Link>
+                  ))}
+                </div>
 
                 {/* User Actions */}
-                <div className="pt-4 border-t border-white/20 space-y-3">
-                  <h3 className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-800 space-y-2">
+                  <h3 className="px-3 py-2 text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase tracking-wider">
                     Account
                   </h3>
 
@@ -241,7 +230,7 @@ export function Navbar() {
                       <Link
                         href="/profile"
                         onClick={() => setMobileMenuOpen(false)}>
-                        <Button className="w-[90%] mb-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                        <Button className="w-full mb-2 justify-start bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold shadow-md">
                           <UserCircle className="w-4 h-4 mr-2" />
                           View Profile
                         </Button>
@@ -251,14 +240,14 @@ export function Navbar() {
                         <Link
                           href="/admin"
                           onClick={() => setMobileMenuOpen(false)}>
-                          <Button className="w-[90%] bg-yellow-500 hover:bg-yellow-600 text-blue-900 font-semibold">
+                          <Button className="w-full justify-start bg-yellow-500 hover:bg-yellow-600 text-blue-900 font-semibold shadow-md">
                             Admin Dashboard
                           </Button>
                         </Link>
                       )}
                     </>
                   ) : (
-                    <div className="w-[90%]">
+                    <div className="w-full">
                       <AuthButton user={null} />
                     </div>
                   )}

@@ -38,7 +38,7 @@ const Footer = () => {
             <div className="inline-flex items-center justify-center gap-3 mb-4">
             </div>
             <h2 className="text-3xl sm:text-4xl py-2 lg:text-5xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent mb-2">
-              National Students' Convention
+              Tech Media Fest 2025
             </h2>
             <p className="text-sm sm:text-base text-gray-400 max-w-2xl mx-auto px-4">
               Empowering youth through education, innovation, and community engagement

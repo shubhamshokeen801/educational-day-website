@@ -1,3 +1,4 @@
+// app/api/team/join/route.ts
 import { NextResponse } from 'next/server';
 import { createServerClientInstance } from '@/app/lib/supabaseServerClient';
 
@@ -7,7 +8,10 @@ export async function POST(req: Request) {
     const { teamCode, phoneNumber } = body;
     
     if (!teamCode) {
-      return NextResponse.json({ error: 'teamCode is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Team code is required' }, 
+        { status: 400 }
+      );
     }
     
     // Validate phone number
@@ -22,7 +26,12 @@ export async function POST(req: Request) {
 
     // Verify user session
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Not authenticated' }, 
+        { status: 401 }
+      );
+    }
 
     // Find team by code
     const { data: team, error: teamErr } = await supabase
@@ -31,8 +40,19 @@ export async function POST(req: Request) {
       .eq('team_code', teamCode)
       .maybeSingle();
 
-    if (teamErr) return NextResponse.json({ error: 'Error fetching team' }, { status: 500 });
-    if (!team) return NextResponse.json({ error: 'Team not found' }, { status: 404 });
+    if (teamErr) {
+      return NextResponse.json(
+        { error: 'Error fetching team' }, 
+        { status: 500 }
+      );
+    }
+
+    if (!team) {
+      return NextResponse.json(
+        { error: 'Team not found. Please check the team code.' }, 
+        { status: 404 }
+      );
+    }
 
     // Get event data
     const { data: event, error: eventErr } = await supabase
@@ -41,19 +61,35 @@ export async function POST(req: Request) {
       .eq('id', team.event_id)
       .maybeSingle();
 
-    if (eventErr) return NextResponse.json({ error: 'Error fetching event' }, { status: 500 });
-    if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-    
-    // check registration open
-    if (!event.registration_open)
-      return NextResponse.json({ error: "Registrations are closed." }, { status: 400 });
+    if (eventErr) {
+      return NextResponse.json(
+        { error: 'Error fetching event' }, 
+        { status: 500 }
+      );
+    }
 
-    // Check if user already registered (solo)
+    if (!event) {
+      return NextResponse.json(
+        { error: 'Event not found' }, 
+        { status: 404 }
+      );
+    }
+    
+    // Check if registration is open
+    if (!event.registration_open) {
+      return NextResponse.json(
+        { error: 'Registrations are closed for this event' }, 
+        { status: 400 }
+      );
+    }
+
+    // Check if user already registered solo for this event
     const { data: soloReg } = await supabase
       .from('registration')
       .select('id')
       .eq('event_id', event.id)
       .eq('user_id', user.id)
+      .is('team_id', null)
       .maybeSingle();
 
     if (soloReg) {
@@ -71,7 +107,6 @@ export async function POST(req: Request) {
 
     if (userTeams && userTeams.length > 0) {
       const teamIds = userTeams.map((t) => t.team_id);
-
       const { data: eventTeams } = await supabase
         .from('teams')
         .select('id')
@@ -108,11 +143,18 @@ export async function POST(req: Request) {
         .select('id')
         .eq('team_id', team.id);
 
-      if (membersErr)
-        return NextResponse.json({ error: 'Error checking team size' }, { status: 500 });
+      if (membersErr) {
+        return NextResponse.json(
+          { error: 'Error checking team size' }, 
+          { status: 500 }
+        );
+      }
 
       if (members && members.length >= event.max_team_size) {
-        return NextResponse.json({ error: 'Team is already full.' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'Team is already full.' }, 
+          { status: 400 }
+        );
       }
     }
 
@@ -130,19 +172,18 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if leader has paid (optional check)
-    if (teamRegistration.payment_status !== 'completed') {
-      // You can optionally allow joining even if payment is pending
-      // Or you can enforce payment first - uncomment below to enforce:
-      /*
+    // For paid events, optionally check if leader has paid
+    // (You can uncomment this if you want to enforce payment before allowing joins)
+    /*
+    if (event.is_paid && teamRegistration.payment_status !== 'completed') {
       return NextResponse.json(
         { error: 'Team registration payment is pending. Please wait for team leader to complete payment.' },
         { status: 400 }
       );
-      */
     }
+    */
 
-    // Add member with phone number (NO registration creation - only join team_members)
+    // Add member with phone number (NO separate registration - only join team_members)
     const { data: newMember, error: joinErr } = await supabase
       .from('team_members')
       .insert({
@@ -156,17 +197,27 @@ export async function POST(req: Request) {
 
     if (joinErr) {
       console.error('Error joining team:', joinErr);
-      return NextResponse.json({ error: joinErr.message }, { status: 500 });
+      return NextResponse.json(
+        { error: joinErr.message }, 
+        { status: 500 }
+      );
     }
+
+    const message = event.is_paid
+      ? 'Successfully joined the team! The team leader will handle payment for the entire team.'
+      : 'Successfully joined the team!';
 
     return NextResponse.json({
       success: true,
       team,
       member: newMember,
-      message: 'Successfully joined the team! The team leader will handle payment.',
+      message,
     });
   } catch (err) {
     console.error('Unexpected error:', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' }, 
+      { status: 500 }
+    );
   }
 }

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { createClient } from "@/app/lib/supabaseClient";
 import Link from "next/link";
-import { Calendar, Users, User, ArrowRight, Sparkles } from "lucide-react";
+import { Calendar, Users, User, ArrowRight, Sparkles, DollarSign } from "lucide-react";
 
 interface Event {
   id: string;
@@ -18,7 +18,9 @@ interface Event {
   registration_open: boolean;
   image_url?: string;
   is_mun_event?: string | null;
-  slug?: string; // Add slug field
+  slug?: string;
+  is_paid: boolean;
+  registration_fee: number | null;
 }
 
 // Helper function to create URL-friendly slug
@@ -26,9 +28,9 @@ function createSlug(name: string): string {
   return name
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-'); // Replace multiple hyphens with single hyphen
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
 }
 
 export default function EventCard() {
@@ -105,7 +107,6 @@ export default function EventCard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto">
         <AnimatePresence>
           {events.map((event, index) => {
-            // Use slug from database or generate from name
             const eventSlug = event.slug || createSlug(event.name);
             
             return (
@@ -147,6 +148,30 @@ export default function EventCard() {
                   <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-4 sm:mb-5 line-clamp-2">
                     {event.description || "Join us for an exciting learning experience!"}
                   </p>
+
+                  {/* Registration Fee */}
+                  {event.is_paid && event.registration_fee && (
+                    <div className="mb-4 pb-4 border-b border-gray-100 dark:border-gray-800">
+                      <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 px-3 py-2 rounded-lg border border-green-200 dark:border-green-800">
+                        <DollarSign className="w-4 h-4 text-green-600 dark:text-green-400" />
+                        <span className="text-sm font-bold text-green-700 dark:text-green-300">
+                          ₹{event.registration_fee}
+                        </span>
+                        <span className="text-xs text-green-600 dark:text-green-400">Registration Fee</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {!event.is_paid && (
+                    <div className="mb-4 pb-4 border-b border-gray-100 dark:border-gray-800">
+                      <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <span className="text-sm font-bold text-blue-700 dark:text-blue-300">
+                          Free Event
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Footer */}
                   <div className="flex justify-between items-center mt-auto pt-3 sm:pt-4 border-t border-gray-100 dark:border-gray-800">

@@ -1,55 +1,91 @@
+// components/MunSection.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { createClient } from "@/app/lib/supabaseClient";
 import Link from "next/link";
-import { Award, ArrowRight, Calendar, MapPin, Users2, Globe2, Scroll, Sparkles } from "lucide-react";
+import { Award, ArrowRight, Calendar, Users2, Globe2, Sparkles, IndianRupee, Scroll } from "lucide-react";
 
 interface MUNEvent {
   id: string;
   name: string;
   description: string;
-  start_date: string;
-  end_date: string;
+  event_datetime: string;
   registration_open: boolean;
   image_url?: string;
   registration_fee: number;
   slug?: string;
 }
 
-function createSlug(name: string): string {
+// Function to generate slug from event name
+const generateSlug = (name: string): string => {
   return name
     .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+};
 
 const MunSection = () => {
   const [munEvents, setMunEvents] = useState<MUNEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClient();
 
   useEffect(() => {
     async function fetchMUNEvents() {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .eq("is_mun_event", "true")
-        .order("start_date", { ascending: true });
-
-      if (error) setError(error.message);
-      else setMunEvents(data || []);
-      
-      setLoading(false);
+      try {
+        const res = await fetch('/api/mun/events');
+        const data = await res.json();
+        
+        if (res.ok) {
+          // Add slug to each event
+          const eventsWithSlug = data.map((event: MUNEvent) => ({
+            ...event,
+            slug: generateSlug(event.name)
+          }));
+          setMunEvents(eventsWithSlug);
+        } else {
+          setError(data.error || 'Failed to load MUN events');
+        }
+      } catch (err) {
+        setError('Failed to load MUN events');
+        console.error('Error fetching MUN events:', err);
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchMUNEvents();
-  }, [supabase]);
+  }, []);
+
+  // Get icon and color based on event slug/name
+  const getEventStyle = (slug: string) => {
+    const slugLower = slug.toLowerCase();
+    if (slugLower.includes('aippm')) {
+      return {
+        icon: Users2,
+        color: 'from-blue-500 to-blue-600',
+        bgGradient: 'from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20'
+      };
+    } else if (slugLower.includes('who')) {
+      return {
+        icon: Globe2,
+        color: 'from-emerald-500 to-emerald-600',
+        bgGradient: 'from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20'
+      };
+    } else if (slugLower.includes('ip') || slugLower.includes('press')) {
+      return {
+        icon: Scroll,
+        color: 'from-violet-500 to-violet-600',
+        bgGradient: 'from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20'
+      };
+    }
+    // Default
+    return {
+      icon: Award,
+      color: 'from-purple-500 to-purple-600',
+      bgGradient: 'from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20'
+    };
+  };
 
   if (loading) {
     return (
@@ -67,7 +103,7 @@ const MunSection = () => {
 
   if (error) {
     return (
-      <section className="py-16 sm:py-24 bg-gradient-to-b from-gray-50 to-white dark:from-neutral-950 dark:to-neutral-900">
+      <section className="py-16 sm:py-24 bg-gradient-to-b from-gray-50 to-white dark:from-neutral-950 dark:to-neutral-900" id="mun">
         <div className="flex flex-col justify-center items-center py-12 sm:py-16">
           <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-2xl p-6 sm:p-8 max-w-md">
             <p className="text-red-600 dark:text-red-400 font-semibold text-base sm:text-lg">Error loading MUN events</p>
@@ -77,30 +113,6 @@ const MunSection = () => {
       </section>
     );
   }
-
-  const committees = [
-    {
-      name: "AIPPM",
-      fullName: "All India Political Parties Meet",
-      agenda: "Broadcasting Services (Regulation) Bill - media freedom and public discourse",
-      icon: Users2,
-      color: "from-blue-500 to-blue-600"
-    },
-    {
-      name: "WHO",
-      fullName: "World Health Organization",
-      agenda: "Medical malpractice and inadequate healthcare services",
-      icon: Globe2,
-      color: "from-emerald-500 to-emerald-600"
-    },
-    {
-      name: "IP",
-      fullName: "International Press",
-      agenda: "Documenting, questioning, and reporting every move",
-      icon: Scroll,
-      color: "from-violet-500 to-violet-600"
-    }
-  ];
 
   return (
     <section className="py-16 sm:py-24 bg-gradient-to-b from-gray-50 to-white dark:from-neutral-950 dark:to-neutral-900" id="mun">
@@ -125,18 +137,6 @@ const MunSection = () => {
             <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 mb-6">
               Step into the world of diplomacy, debate, and dialogue at our flagship TechMedia Fest
             </p>
-            
-            {/* <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mb-6">
-              <div className="flex items-center gap-2 bg-white dark:bg-neutral-800 px-4 py-2.5 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700">
-                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400" />
-                <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200">12th & 13th November 2025</span>
-              </div>
-              
-              <div className="flex items-center gap-2 bg-white dark:bg-neutral-800 px-4 py-2.5 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700">
-                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400" />
-                <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200">BVICAM, Paschim Vihar</span>
-              </div>
-            </div> */}
 
             {/* Marquee Text */}
             <div className="relative overflow-hidden py-3 mb-6">
@@ -151,71 +151,20 @@ const MunSection = () => {
           </motion.div>
         </div>
 
-        {/* Committees */}
-        {/* <div className="mb-16">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-10"
-          >
-            <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">Three Dynamic Committees</h3>
-            <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">Choose your arena of impact</p>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            {committees.map((committee, index) => (
-              <motion.div
-                key={committee.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="group bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-lg hover:shadow-xl border border-gray-100 dark:border-gray-800 transition-all duration-300"
-              >
-                <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${committee.color} mb-4`}>
-                  <committee.icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-                </div>
-                
-                <h4 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2">{committee.name}</h4>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-semibold mb-3">{committee.fullName}</p>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                  <span className="font-semibold text-gray-900 dark:text-white">Agenda:</span> {committee.agenda}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div> */}
-
-        {/* Info Banner */}
-        {/* <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 sm:p-8 mb-16 border border-purple-200 dark:border-purple-800"
-        >
-          <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-            <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-purple-600 dark:text-purple-400 flex-shrink-0" />
-            <div>
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2">
-                For Seasoned MUNers & First-Timers Alike
-              </h3>
-              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
-                This is your chance to voice your opinions, sharpen your diplomacy, and make your mark on the global stage
-              </p>
-            </div>
-          </div>
-        </motion.div> */}
-
         {/* Event Cards */}
         {munEvents.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             <AnimatePresence>
               {munEvents.map((event, index) => {
-                const eventSlug = event.slug || createSlug(event.name);
-                
+                const eventDate = new Date(event.event_datetime);
+                const formattedDate = eventDate.toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric',
+                  year: 'numeric'
+                });
+                const eventStyle = getEventStyle(event.slug || '');
+                const EventIcon = eventStyle.icon;
+
                 return (
                   <motion.div
                     key={event.id}
@@ -229,21 +178,34 @@ const MunSection = () => {
                     {/* Status Badge */}
                     {event.registration_open && (
                       <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-10">
-                        <div className="bg-green-500 text-white text-xs sm:text-sm font-bold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-lg flex items-center gap-1 sm:gap-1.5">
+                        <div className="bg-green-500 text-white text-xs sm:text-sm font-bold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-lg flex items-center gap-1 sm:gap-1.5 backdrop-blur-sm">
                           <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full animate-pulse"></div>
                           Open
                         </div>
                       </div>
                     )}
 
+                    {!event.registration_open && (
+                      <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-10">
+                        <div className="bg-gray-500 text-white text-xs sm:text-sm font-bold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-lg backdrop-blur-sm">
+                          Closed
+                        </div>
+                      </div>
+                    )}
+
                     {/* Event Image */}
-                    <div className="relative w-full h-48 sm:h-56 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 overflow-hidden">
+                    <div className={`relative w-full h-48 sm:h-56 bg-gradient-to-br ${eventStyle.bgGradient} overflow-hidden`}>
                       <img
-                        src={event.image_url || "https://placehold.co/600x400?text=MUN+Committee"}
+                        src={event.image_url || "https://placehold.co/600x400?text=MUN+Event"}
                         alt={event.name}
                         className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      
+                      {/* Event Icon Badge */}
+                      <div className={`absolute bottom-3 left-3 bg-gradient-to-r ${eventStyle.color} p-3 rounded-xl shadow-lg`}>
+                        <EventIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                      </div>
                     </div>
 
                     {/* Event Info */}
@@ -252,9 +214,28 @@ const MunSection = () => {
                         {event.name}
                       </h3>
 
-                      <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-4 sm:mb-5 line-clamp-2">
-                        {event.description || "Join this prestigious MUN committee"}
+                      <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mb-4 line-clamp-3">
+                        {event.description || "Join this prestigious MUN event"}
                       </p>
+
+                      {/* Event Details */}
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center gap-2 text-xs sm:text-sm">
+                          <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                          <span className="text-gray-700 dark:text-gray-300 font-medium">
+                            {formattedDate}
+                          </span>
+                        </div>
+                        
+                        {event.registration_fee && (
+                          <div className="flex items-center gap-2 text-xs sm:text-sm">
+                            <IndianRupee className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">
+                              ₹{event.registration_fee}
+                            </span>
+                          </div>
+                        )}
+                      </div>
 
                       {/* Footer */}
                       <div className="flex justify-between items-center mt-auto pt-3 sm:pt-4 border-t border-gray-100 dark:border-gray-800">
@@ -265,13 +246,22 @@ const MunSection = () => {
                           </span>
                         </div>
 
-                        <Link
-                          href={`/events/${eventSlug}/register`}
-                          className="relative px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs sm:text-sm font-semibold rounded-xl sm:rounded-2xl transition-all duration-300 shadow-md hover:shadow-xl flex items-center gap-1.5 sm:gap-2"
-                        >
-                          Register
-                          <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover/btn:translate-x-1 transition-transform" />
-                        </Link>
+                        {event.registration_open ? (
+                          <Link
+                            href={`/mun/${event.slug}/register`}
+                            className="group/btn relative px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs sm:text-sm font-semibold rounded-xl sm:rounded-2xl transition-all duration-300 shadow-md hover:shadow-xl flex items-center gap-1.5 sm:gap-2"
+                          >
+                            Register
+                            <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover/btn:translate-x-1 transition-transform" />
+                          </Link>
+                        ) : (
+                          <button
+                            disabled
+                            className="px-4 sm:px-5 py-2 sm:py-2.5 bg-gray-400 dark:bg-gray-700 text-white text-xs sm:text-sm font-semibold rounded-xl sm:rounded-2xl cursor-not-allowed opacity-60"
+                          >
+                            Closed
+                          </button>
+                        )}
                       </div>
                     </div>
                   </motion.div>
@@ -292,7 +282,7 @@ const MunSection = () => {
               <Globe2 className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-gray-400 mb-4 sm:mb-6" />
               <h3 className="text-lg sm:text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">No MUN Events Available</h3>
               <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
-                Check back soon for exciting MUN committees!
+                Check back soon for exciting MUN events!
               </p>
             </div>
           </motion.div>

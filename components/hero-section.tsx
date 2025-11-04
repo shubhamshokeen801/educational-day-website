@@ -45,7 +45,7 @@ export const Hero: React.FC = () => {
             className="flex items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-8">
             {/* <GraduationCap className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-blue-600 dark:text-blue-400" /> */}
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-blue-600 dark:text-blue-400">
-              Tech Media Fest 2025 <br /> and <br /> Education Day 2025
+              Tech Media Fest 2025 <br /> & <br /> MUN 2025
             </h2>
           </motion.div>
 

@@ -29,7 +29,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
   };
 
   const validatePhone = (phone: string) => {
-    // Basic validation: 10 digits
     const phoneRegex = /^[0-9]{10}$/;
     return phoneRegex.test(phone.replace(/\s/g, ''));
   };
@@ -64,8 +63,14 @@ export default function RegisterFormClient({ event }: { event: any }) {
       const data = await res.json();
       if (!res.ok) return showMessage(data.error || 'Error while registering solo.');
 
-      showMessage('Solo registration successful!', 'success');
-      router.push(`/events/${event.id}/payment?reg=${data.registration.id}`);
+      showMessage(data.message || 'Solo registration successful!', 'success');
+      
+      // Redirect based on whether payment is required
+      if (data.requiresPayment) {
+        router.push(`/payment?reg=${data.registration.id}&type=regular`);
+      } else {
+        setTimeout(() => router.push('/'), 2000);
+      }
     } catch (err) {
       showMessage('Unexpected error. Try again.');
     } finally {
@@ -93,11 +98,15 @@ export default function RegisterFormClient({ event }: { event: any }) {
       const data = await res.json();
       if (!res.ok) return showMessage(data.error || 'Error creating team.');
 
-      // Store the generated team code
       setGeneratedTeamCode(data.team.team_code);
-      showMessage('Team created successfully!', 'success');
+      showMessage(data.message || 'Team created successfully!', 'success');
       
-      // Don't redirect immediately - let user see the code
+      // Redirect based on whether payment is required
+      if (data.requiresPayment) {
+        setTimeout(() => {
+          router.push(`/payment?reg=${data.registration.id}&type=regular`);
+        }, 2000);
+      }
     } catch (err) {
       showMessage('Unexpected error. Try again.');
     } finally {
@@ -124,8 +133,8 @@ export default function RegisterFormClient({ event }: { event: any }) {
       const data = await res.json();
       if (!res.ok) return showMessage(data.error || 'Error joining team.');
 
-      showMessage('Joined team successfully!', 'success');
-      router.push(`/events/${event.id}`);
+      showMessage(data.message || 'Joined team successfully!', 'success');
+      setTimeout(() => router.push('/profile'), 2000);
     } catch (err) {
       showMessage('Unexpected error. Try again.');
     } finally {
@@ -263,7 +272,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
                           value={phoneNumber}
                           onChange={(e) => setPhoneNumber(e.target.value)}
                           maxLength={10}
-                          className="w-full pl-10! border-2 border-indigo-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
+                          className="w-full pl-10 border-2 border-indigo-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
                         />
                       </div>
                     </div>
@@ -278,10 +287,9 @@ export default function RegisterFormClient({ event }: { event: any }) {
                 </div>
               )}
 
-              {/* TEAM MODE - Show by default if solo not allowed */}
+              {/* TEAM MODE */}
               {(mode === 'team' || !isSoloAllowed) && (
                 <div className="animate-fadeIn space-y-4 sm:space-y-6">
-                  {/* Team-Only Event Notice */}
                   {!isSoloAllowed && !generatedTeamCode && (
                     <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-4 mb-4">
                       <div className="flex items-start gap-3">
@@ -344,18 +352,20 @@ export default function RegisterFormClient({ event }: { event: any }) {
                           )}
                         </button>
 
-                        {/* Continue Button */}
-                        <button
-                          onClick={() => router.push('/profile')}
-                          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300"
-                        >
-                          Go to Profile
-                        </button>
+                        {/* Note about payment redirect - will auto redirect if paid event */}
+                        {!event.is_paid && (
+                          <button
+                            onClick={() => router.push('/profile')}
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300"
+                          >
+                            Go to Profile
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
 
-                  {/* Create Team Form - Hide after successful creation */}
+                  {/* Create Team Form */}
                   {!generatedTeamCode && (
                     <>
                       <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl sm:rounded-2xl p-5 sm:p-7 border-2 border-purple-100">
@@ -491,7 +501,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     maxLength={10}
-                    className="w-full pl-10! border-2 border-indigo-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
+                    className="w-full pl-10 border-2 border-indigo-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
                   />
                 </div>
               </div>

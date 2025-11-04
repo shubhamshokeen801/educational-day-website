@@ -1,51 +1,92 @@
+// app/api/register/solo/route.ts
 import { NextResponse } from 'next/server';
 import { createServerClientInstance } from '@/app/lib/supabaseServerClient';
 
 export async function POST(req: Request) {
-  const { eventId, phoneNumber } = await req.json();
-  
-  // Validate phone number
-  if (!phoneNumber || !/^[0-9]{10}$/.test(phoneNumber)) {
-    return NextResponse.json(
-      { error: 'Valid 10-digit phone number is required' }, 
-      { status: 400 }
-    );
-  }
-  
-  const supabase = await createServerClientInstance();
+  try {
+    const body = await req.json();
+    const { eventId, phoneNumber } = body;
+    
+    // Validate phone number
+    if (!phoneNumber || !/^[0-9]{10}$/.test(phoneNumber)) {
+      return NextResponse.json(
+        { error: 'Valid 10-digit phone number is required' }, 
+        { status: 400 }
+      );
+    }
+    
+    const supabase = await createServerClientInstance();
 
-  // Verify user session
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user)
-    return NextResponse.json({ error: 'Signin to register in event' }, { status: 401 });
+    // Verify user session
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Sign in to register for event' }, 
+        { status: 401 }
+      );
+    }
 
-  // Check if event exists and allows solo/team registration
-  const { data: event, error: eventErr } = await supabase
-    .from('events')
-    .select('*')
-    .eq('id', eventId)
-    .maybeSingle();
+    // Check if event exists
+    const { data: event, error: eventErr } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', eventId)
+      .maybeSingle();
 
-  if (eventErr) return NextResponse.json({ error: 'Error fetching event' }, { status: 500 });
-  if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+    if (eventErr) {
+      return NextResponse.json(
+        { error: 'Error fetching event' }, 
+        { status: 500 }
+      );
+    }
 
-  // Check registration open for event
-  if (!event.registration_open)
-    return NextResponse.json({ error: "Registrations are closed." }, { status: 400 });
+    if (!event) {
+      return NextResponse.json(
+        { error: 'Event not found' }, 
+        { status: 404 }
+      );
+    }
 
-  // If event allows team registration, ensure user is not part of any team for this event
-  if (event.is_team_event) {
-    const { data: userTeams, error: teamCheckErr } = await supabase
+    // Check if registration is open
+    if (!event.registration_open) {
+      return NextResponse.json(
+        { error: 'Registrations are closed for this event' }, 
+        { status: 400 }
+      );
+    }
+
+    // Check if event is a team event (solo registration not allowed)
+    if (event.is_team_event) {
+      return NextResponse.json(
+        { error: 'This is a team event. Please create or join a team to register.' }, 
+        { status: 400 }
+      );
+    }
+
+    // Check if user already has a solo registration
+    const { data: existing } = await supabase
+      .from('registration')
+      .select('id')
+      .eq('event_id', eventId)
+      .eq('user_id', user.id)
+      .is('team_id', null)
+      .maybeSingle();
+
+    if (existing) {
+      return NextResponse.json(
+        { error: 'You are already registered for this event' }, 
+        { status: 400 }
+      );
+    }
+
+    // Check if user is part of a team for this event
+    const { data: userTeams } = await supabase
       .from('team_members')
       .select('team_id')
       .eq('user_id', user.id);
 
-    if (teamCheckErr)
-      return NextResponse.json({ error: 'Error checking team membership' }, { status: 500 });
-
     if (userTeams && userTeams.length > 0) {
       const teamIds = userTeams.map((t) => t.team_id);
-
       const { data: teamsForEvent } = await supabase
         .from('teams')
         .select('id')
@@ -58,34 +99,50 @@ export async function POST(req: Request) {
         }, { status: 400 });
       }
     }
+
+    // Determine payment status based on event type
+    const paymentStatus = event.is_paid ? 'pending' : 'verified';
+    const registrationStatus = event.is_paid ? 'pending' : 'verified';
+
+    // Insert new solo registration
+    const { data: reg, error: regError } = await supabase
+      .from('registration')
+      .insert({
+        event_id: eventId,
+        user_id: user.id,
+        phone_number: phoneNumber,
+        payment_status: paymentStatus,
+        status: registrationStatus,
+        registered_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (regError) {
+      console.error('Error creating registration:', regError);
+      return NextResponse.json(
+        { error: regError.message }, 
+        { status: 500 }
+      );
+    }
+
+    // Return appropriate message based on payment requirement
+    const message = event.is_paid 
+      ? 'Successfully registered! Please complete payment to confirm your registration.'
+      : 'Successfully registered for the event!';
+
+    return NextResponse.json({
+      success: true,
+      registration: reg,
+      requiresPayment: event.is_paid,
+      registrationFee: event.registration_fee,
+      message,
+    });
+  } catch (err) {
+    console.error('Unexpected error:', err);
+    return NextResponse.json(
+      { error: 'Internal server error' }, 
+      { status: 500 }
+    );
   }
-
-  // Check if user already has a solo registration
-  const { data: existing } = await supabase
-    .from('registration')
-    .select('*')
-    .eq('event_id', eventId)
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  if (existing)
-    return NextResponse.json({ error: 'Already registered for this event' }, { status: 400 });
-
-  // Insert new solo registration with phone number
-  const { data: reg, error } = await supabase
-    .from('registration')
-    .insert({
-      event_id: eventId,
-      user_id: user.id,
-      phone_number: phoneNumber,
-      payment_status: 'pending',
-      registered_at: new Date().toISOString(),
-    })
-    .select()
-    .single();
-
-  if (error)
-    return NextResponse.json({ error: error.message }, { status: 500 });
-
-  return NextResponse.json({ registration: reg });
 }

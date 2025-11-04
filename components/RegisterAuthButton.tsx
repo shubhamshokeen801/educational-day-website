@@ -1,9 +1,10 @@
+// components/RegisterAuthButton.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/app/lib/supabaseClient';
-import { LogIn, UserPlus, Users, Plus } from 'lucide-react';
+import { LogIn, UserPlus, Users, Plus, Globe2 } from 'lucide-react';
 
 interface RegisterAuthButtonProps {
   eventId: string;
@@ -11,6 +12,7 @@ interface RegisterAuthButtonProps {
   buttonType: 'solo' | 'create-team' | 'join-team';
   loading?: boolean;
   className?: string;
+  isMunEvent?: boolean; // New prop to distinguish MUN events
 }
 
 export function RegisterAuthButton({ 
@@ -18,7 +20,8 @@ export function RegisterAuthButton({
   onProceed, 
   buttonType,
   loading: externalLoading = false,
-  className = '' 
+  className = '',
+  isMunEvent = false // Default to false for backward compatibility
 }: RegisterAuthButtonProps) {
   const pathname = usePathname();
   const supabase = createClient();
@@ -67,6 +70,16 @@ export function RegisterAuthButton({
   };
 
   const getButtonConfig = () => {
+    // For MUN events, always use solo registration style
+    if (isMunEvent) {
+      return {
+        icon: <Globe2 className="w-5 h-5" />,
+        text: 'Complete MUN Registration',
+        gradient: 'from-purple-600 via-pink-600 to-indigo-600'
+      };
+    }
+
+    // Regular event button types
     switch (buttonType) {
       case 'solo':
         return {
@@ -120,7 +133,7 @@ export function RegisterAuthButton({
       >
         <span className="flex items-center justify-center gap-2">
           <LogIn className="w-5 h-5" />
-          Sign In to Register
+          {isMunEvent ? 'Sign In to Register for MUN' : 'Sign In to Register'}
         </span>
       </button>
     );
