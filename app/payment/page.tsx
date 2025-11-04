@@ -231,11 +231,11 @@ function PaymentPageContent() {
   // QR Code and UPI ID based on event type
   const qrCodeUrl = eventType === 'mun' 
     ? '/mun-payment-qr.png'
-    : '/images/event-payment-qr.png';
+    : '/Tech-fest-Qr.png';
   
   const upiId = eventType === 'mun'
     ? 'pineappleonpizzakaram@okicici'
-    : 'bvicam@paytm';
+    : 'vijaypadiyar433@okhdfcbank';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-purple-950 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
