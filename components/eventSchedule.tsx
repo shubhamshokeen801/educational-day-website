@@ -43,7 +43,7 @@ const staticEvents: StaticEvent[] = [
     date: "12th Nov",
     time: "2:00 PM - 4:00 PM",
     activity: "Session 1",
-    venue: "AIPPM - Hall A, WHO - Hall B, IP - Hall C",
+    venue: "AIPPM - Hall A, UNGA - Hall B, UNHRC - Hall C",
     category: "MUN",
   },
   {
@@ -59,7 +59,7 @@ const staticEvents: StaticEvent[] = [
     date: "12th Nov",
     time: "4:15 PM - 6:00 PM",
     activity: "Session 2",
-    venue: "AIPPM - Hall A, WHO - Hall B, IP - Hall C",
+    venue: "AIPPM - Hall A, UNGA - Hall B, UNHRC - Hall C",
     category: "MUN",
   },
   {
@@ -83,7 +83,7 @@ const staticEvents: StaticEvent[] = [
     date: "13th Nov",
     time: "1:30 PM - 3:30 PM",
     activity: "Session 1",
-    venue: "AIPPM - Hall A, WHO - Hall B, IP - Hall C",
+    venue: "AIPPM - Hall A, UNGA - Hall B, UNHRC - Hall C",
     category: "MUN",
   },
   {
@@ -99,7 +99,7 @@ const staticEvents: StaticEvent[] = [
     date: "13th Nov",
     time: "3:45 PM - 5:30 PM",
     activity: "Session 2",
-    venue: "AIPPM - Hall A, WHO - Hall B, IP - Hall C",
+    venue: "AIPPM - Hall A, UNGA - Hall B, UNHRC - Hall C",
     category: "MUN",
   },
   {
@@ -264,11 +264,11 @@ export default function EventSchedule() {
                             </div>
                             <div className="flex items-center gap-2">
                               <MapPin className="w-4 h-4 text-gray-400" />
-                              <span>WHO - Hall B</span>
+                              <span>UNGA - Hall B</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <MapPin className="w-4 h-4 text-gray-400" />
-                              <span>IP - Hall C</span>
+                              <span>UNHRC - Hall C</span>
                             </div>
                           </div>
                         ) : (
@@ -326,11 +326,11 @@ export default function EventSchedule() {
                             </div>
                             <div className="flex items-center gap-2">
                               <MapPin className="w-4 h-4 text-gray-400" />
-                              <span>WHO - Hall B</span>
+                              <span>UNGA - Hall B</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <MapPin className="w-4 h-4 text-gray-400" />
-                              <span>IP - Hall C</span>
+                              <span>UNHRC - Hall C</span>
                             </div>
                           </div>
                         ) : (
@@ -354,35 +354,91 @@ export default function EventSchedule() {
                     </div>
                   </td>
                 </tr>
-                {techEvents.map((event, i) => (
-                  <motion.tr
-                    key={event.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: (munEvents.length + i) * 0.05 }}
-                    className="hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors"
-                  >
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                        <Clock className="w-4 h-4 text-pink-600 dark:text-pink-400" />
-                        <span>{event.time}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-3">
-                        <p className="font-bold text-gray-900 dark:text-gray-100">
-                          {event.activity}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5 align-top">
-                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                        <MapPin className="w-4 h-4 text-gray-400" />
-                        <span>{event.venue || "—"}</span>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
+                {/* Day 1 Heading */}
+                <tr className="bg-pink-50 dark:bg-pink-950/50">
+                  <td colSpan={3} className="px-6 py-3">
+                    <span className="text-base font-bold text-pink-700 dark:text-pink-300">
+                      Day 1 - 12 Nov
+                    </span>
+                  </td>
+                </tr>
+                {techEvents
+                  .filter((e) => e.date === "12th Nov")
+                  .map((event, i) => (
+                    <motion.tr
+                      key={event.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: (munEvents.length + i) * 0.05 }}
+                      className="hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors"
+                    >
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                          <Clock className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+                          <span>{event.time}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-3">
+                          <p className="font-bold text-gray-900 dark:text-gray-100">
+                            {event.activity}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 align-top">
+                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <span>{event.venue || "—"}</span>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                {/* Day 2 Heading */}
+                <tr className="bg-pink-50 dark:bg-pink-950/50">
+                  <td colSpan={3} className="px-6 py-3">
+                    <span className="text-base font-bold text-pink-700 dark:text-pink-300">
+                      Day 2 - 13 Nov
+                    </span>
+                  </td>
+                </tr>
+                {techEvents
+                  .filter((e) => e.date === "13th Nov")
+                  .map((event, i) => (
+                    <motion.tr
+                      key={event.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{
+                        delay:
+                          (munEvents.length +
+                            techEvents.filter((e) => e.date === "12th Nov")
+                              .length +
+                            i) *
+                          0.05,
+                      }}
+                      className="hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors"
+                    >
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                          <Clock className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+                          <span>{event.time}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-3">
+                          <p className="font-bold text-gray-900 dark:text-gray-100">
+                            {event.activity}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 align-top">
+                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <span>{event.venue || "—"}</span>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -469,13 +525,13 @@ export default function EventSchedule() {
                                     <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/20 px-3 py-2 rounded-lg">
                                       <MapPin className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                                       <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                        WHO - Hall B
+                                        UNGA - Hall B
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900/20 px-3 py-2 rounded-lg">
                                       <MapPin className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                                       <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                        IP - Hall C
+                                        UNHRC - Hall C
                                       </span>
                                     </div>
                                   </div>
