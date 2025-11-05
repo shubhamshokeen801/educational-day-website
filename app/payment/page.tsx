@@ -323,7 +323,7 @@ function PaymentPageContent() {
         )}
 
         {/* Header */}
-        <div className="bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-600 rounded-3xl shadow-2xl p-8 mb-8 text-white">
+        <div className="pt-15 bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-600 rounded-3xl shadow-2xl p-8 mb-8 text-white">
           <div className="flex items-center gap-4 mb-4">
             <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
               <IndianRupee className="w-8 h-8" />

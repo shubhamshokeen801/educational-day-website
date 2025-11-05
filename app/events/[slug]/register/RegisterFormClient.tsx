@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/app/lib/supabaseClient';
-import { Users, User, Plus, LogIn, Calendar, Award, Phone } from 'lucide-react';
+import { Users, User, Plus, LogIn, Calendar, Award, Phone, Loader2, Info } from 'lucide-react';
 import { RegisterAuthButton } from '@/components/RegisterAuthButton';
 import { toast } from "sonner";
 
@@ -20,6 +20,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
   const [joinCode, setJoinCode] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   const [generatedTeamCode, setGeneratedTeamCode] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -41,10 +42,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
         setCopiedCode(true);
         setTimeout(() => setCopiedCode(false), 2000);
       } catch (err) {
-        /* showMessage('Failed to copy code', 'error'); */
-        toast.error(
-              `Failed to Generate Team Code! Please try again.`,
-            );
+        toast.error('Failed to copy code! Please try again.');
       }
     }
   };
@@ -67,13 +65,11 @@ export default function RegisterFormClient({ event }: { event: any }) {
       const data = await res.json();
       if (!res.ok) return showMessage(data.error || 'Error while registering solo.');
 
-      /* showMessage(data.message || 'Solo registration successful!', 'success'); */
-      toast.success(
-              `Solo registration successful!`
-            );
+      toast.success('Solo registration successful!');
       
       // Redirect based on whether payment is required
       if (data.requiresPayment) {
+        setRedirecting(true);
         router.push(`/payment?reg=${data.registration.id}&type=regular`);
       } else {
         setTimeout(() => router.push('/profile'), 1000);
@@ -106,16 +102,18 @@ export default function RegisterFormClient({ event }: { event: any }) {
       if (!res.ok) return showMessage(data.error || 'Error creating team.');
 
       setGeneratedTeamCode(data.team.team_code);
-      /* showMessage(data.message || 'Team created successfully!', 'success'); */
-      toast.success(
-              `Team created successfully! You will be redirected to payment page shortly.`,
-            );
+      toast.success('Team created successfully!');
       
       // Redirect based on whether payment is required
       if (data.requiresPayment) {
+        // Give user 5 seconds to copy the code before showing redirect overlay
         setTimeout(() => {
-          router.push(`/payment?reg=${data.registration.id}&type=regular`);
-        }, 2000);
+          setRedirecting(true);
+          // Then redirect after another 2 seconds
+          setTimeout(() => {
+            router.push(`/payment?reg=${data.registration.id}&type=regular`);
+          }, 2000);
+        }, 5000);
       }
     } catch (err) {
       showMessage('Unexpected error. Try again.');
@@ -143,10 +141,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
       const data = await res.json();
       if (!res.ok) return showMessage(data.error || 'Error joining team.');
 
-      /* showMessage(data.message || 'Joined team successfully!', 'success'); */
-      toast.success(
-              `Joined team successfully!`,
-            );
+      toast.success('Joined team successfully!');
       setTimeout(() => router.push('/profile'), 1000);
     } catch (err) {
       showMessage('Unexpected error. Try again.');
@@ -157,6 +152,23 @@ export default function RegisterFormClient({ event }: { event: any }) {
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      {/* Redirecting Overlay - Only shows when redirecting is true */}
+      {redirecting && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
+            <div className="flex justify-center mb-4">
+              <Loader2 className="w-16 h-16 text-purple-600 animate-spin" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              Redirecting to Payment
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              Please wait while we redirect you to the payment page...
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 mb-6 sm:mb-8 text-white">
         <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
@@ -346,7 +358,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
                         {/* Copy Button */}
                         <button
                           onClick={copyToClipboard}
-                          className="w-full bg-green-600 hover:bg-green-700 text-white py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 mb-3 flex items-center justify-center gap-2"
+                          className="w-full bg-green-600 hover:bg-green-700 text-white py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 mb-4 flex items-center justify-center gap-2"
                         >
                           {copiedCode ? (
                             <>
@@ -365,14 +377,28 @@ export default function RegisterFormClient({ event }: { event: any }) {
                           )}
                         </button>
 
+                        {/* Disclaimer about accessing code from profile */}
+                        <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-4">
+                          <div className="flex items-start gap-3">
+                            <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                            <p className="text-sm text-blue-800 text-left">
+                              <span className="font-semibold">Don't worry!</span> You can always access your team code from your profile page after registration.
+                            </p>
+                          </div>
+                        </div>
+
                         {/* Note about payment redirect - will auto redirect if paid event */}
-                        {!event.is_paid && (
+                        {!event.is_paid ? (
                           <button
                             onClick={() => router.push('/profile')}
                             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300"
                           >
                             Go to Profile
                           </button>
+                        ) : (
+                          <p className="text-sm text-gray-600 italic">
+                            You will be redirected to payment page in a few seconds...
+                          </p>
                         )}
                       </div>
                     </div>
