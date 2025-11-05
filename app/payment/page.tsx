@@ -245,7 +245,7 @@ function PaymentPageContent() {
     : 'vijaypadiyar433@okhdfcbank';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-purple-950 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+    <div className="pt-15 min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-purple-950 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Alert Message */}
         {message && (
@@ -323,7 +323,7 @@ function PaymentPageContent() {
         )}
 
         {/* Header */}
-        <div className="pt-15 bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-600 rounded-3xl shadow-2xl p-8 mb-8 text-white">
+        <div className="bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-600 rounded-3xl shadow-2xl p-8 mb-8 text-white">
           <div className="flex items-center gap-4 mb-4">
             <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
               <IndianRupee className="w-8 h-8" />

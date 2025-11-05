@@ -170,7 +170,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
       )}
 
       {/* Header Section */}
-      <div className="pt-15 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 mb-6 sm:mb-8 text-white">
+      <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 mb-6 sm:mb-8 text-white">
         <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
           <div className="bg-white/20 backdrop-blur-sm p-2 sm:p-3 rounded-xl">
             <Calendar className="w-6 h-6 sm:w-8 sm:h-8" />
