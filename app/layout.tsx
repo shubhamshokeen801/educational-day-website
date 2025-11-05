@@ -5,7 +5,7 @@ import Footer from "@/components/footer";
 import { UserProvider } from "./context/UserContext";
 
 export const metadata = {
-  title: "Tech media fest",
+  title: "Tech Media Fest 2025",
   description: "Tech Media Fest 2025 and Model United Nations 2025",
 };
 

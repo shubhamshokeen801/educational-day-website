@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/app/lib/supabaseClient';
 import { Phone, Building2, GraduationCap, Users, CheckCircle2, AlertCircle } from 'lucide-react';
 import { RegisterAuthButton } from '@/components/RegisterAuthButton';
+import { toast } from 'sonner';
 
 interface MUNRegisterFormProps {
   munEvent: any;
@@ -66,7 +67,10 @@ export default function MUNRegisterFormClient({ munEvent }: MUNRegisterFormProps
         return showMessage(data.error || 'Error during registration.');
       }
 
-      showMessage('MUN registration successful!', 'success');
+      /* showMessage('MUN registration successful!', 'success'); */
+      toast.success(
+              `Mun registration successful!`
+            );
       
       // Redirect to payment page with type parameter
       router.push(`/payment?reg=${data.registration.id}&type=mun`);

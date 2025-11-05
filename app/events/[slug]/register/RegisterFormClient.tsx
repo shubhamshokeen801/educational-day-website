@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/app/lib/supabaseClient';
 import { Users, User, Plus, LogIn, Calendar, Award, Phone } from 'lucide-react';
 import { RegisterAuthButton } from '@/components/RegisterAuthButton';
+import { toast } from "sonner";
 
 export default function RegisterFormClient({ event }: { event: any }) {
   const router = useRouter();
@@ -40,7 +41,10 @@ export default function RegisterFormClient({ event }: { event: any }) {
         setCopiedCode(true);
         setTimeout(() => setCopiedCode(false), 2000);
       } catch (err) {
-        showMessage('Failed to copy code', 'error');
+        /* showMessage('Failed to copy code', 'error'); */
+        toast.error(
+              `Failed to Generate Team Code! Please try again.`,
+            );
       }
     }
   };
@@ -63,13 +67,16 @@ export default function RegisterFormClient({ event }: { event: any }) {
       const data = await res.json();
       if (!res.ok) return showMessage(data.error || 'Error while registering solo.');
 
-      showMessage(data.message || 'Solo registration successful!', 'success');
+      /* showMessage(data.message || 'Solo registration successful!', 'success'); */
+      toast.success(
+              `Solo registration successful!`
+            );
       
       // Redirect based on whether payment is required
       if (data.requiresPayment) {
         router.push(`/payment?reg=${data.registration.id}&type=regular`);
       } else {
-        setTimeout(() => router.push('/'), 2000);
+        setTimeout(() => router.push('/profile'), 1000);
       }
     } catch (err) {
       showMessage('Unexpected error. Try again.');
@@ -99,7 +106,10 @@ export default function RegisterFormClient({ event }: { event: any }) {
       if (!res.ok) return showMessage(data.error || 'Error creating team.');
 
       setGeneratedTeamCode(data.team.team_code);
-      showMessage(data.message || 'Team created successfully!', 'success');
+      /* showMessage(data.message || 'Team created successfully!', 'success'); */
+      toast.success(
+              `Team created successfully! You will be redirected to payment page shortly.`,
+            );
       
       // Redirect based on whether payment is required
       if (data.requiresPayment) {
@@ -133,8 +143,11 @@ export default function RegisterFormClient({ event }: { event: any }) {
       const data = await res.json();
       if (!res.ok) return showMessage(data.error || 'Error joining team.');
 
-      showMessage(data.message || 'Joined team successfully!', 'success');
-      setTimeout(() => router.push('/profile'), 2000);
+      /* showMessage(data.message || 'Joined team successfully!', 'success'); */
+      toast.success(
+              `Joined team successfully!`,
+            );
+      setTimeout(() => router.push('/profile'), 1000);
     } catch (err) {
       showMessage('Unexpected error. Try again.');
     } finally {

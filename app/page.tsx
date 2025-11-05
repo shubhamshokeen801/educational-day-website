@@ -15,7 +15,6 @@ export default function HomePage() {
       <EventSchedule />
       <FAQ/>
       <main className="pt-20">
-        {/* Other homepage sections or routed children can go here */}
       </main>
     </>
   );

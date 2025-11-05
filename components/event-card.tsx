@@ -44,7 +44,7 @@ export default function EventCard() {
       const { data, error } = await supabase
         .from("events")
         .select("*")
-        .order("start_date", { ascending: true });
+        /* .order("start_date", { ascending: true }); */
 
       if (error) setError(error.message);
       else {

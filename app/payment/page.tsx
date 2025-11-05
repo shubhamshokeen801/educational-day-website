@@ -4,6 +4,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/app/lib/supabaseClient';
+import { toast } from 'sonner';
 import { Upload, CheckCircle2, AlertCircle, IndianRupee, QrCode, ArrowRight, Loader2 } from 'lucide-react';
 
 function PaymentPageContent() {
@@ -97,7 +98,10 @@ function PaymentPageContent() {
 
       // If payment already verified, redirect to profile
       if (regData.payment_status === 'verified' || regData.payment_status === 'approved') {
-        showMessage('Payment already verified!', 'success');
+        /* showMessage('Payment already verified!', 'success'); */
+        toast.success(
+              `Payment already verified!`
+            );
         setTimeout(() => router.push('/profile'), 2000);
       }
 
@@ -180,8 +184,11 @@ function PaymentPageContent() {
         throw new Error(data.error || 'Upload failed');
       }
 
-      showMessage('Payment proof uploaded successfully!', 'success');
+      /* showMessage('Payment proof uploaded successfully!', 'success'); */
       setUploadSuccess(true);
+      toast.success(
+              `Payment proof uploaded successfully!`
+            );
       
       // Scroll to top to show team code (if applicable)
       setTimeout(() => {

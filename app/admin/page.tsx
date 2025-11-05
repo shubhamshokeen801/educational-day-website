@@ -18,7 +18,7 @@ interface RegistrationRow {
   event_type: 'regular' | 'mun';
   users?: { name: string; email: string };
   teams?: { team_name: string; team_code: string; leader_email?: string };
-  team_members?: { name: string; email: string; phone_number?: string }[];
+  team_members?: { name: string; email: string; phone_number?: string; role?: string }[];
   events?: { name: string; is_paid?: boolean; registration_fee?: number };
 }
 
@@ -161,14 +161,15 @@ export default function AdminDashboard() {
   );
 
   const downloadCSV = () => {
-    const headers = ['#', 'Event Type', 'Event', 'Participant/Team', 'Email', 'Phone', 'Institute', 'Qualification', 'Team Members', 'Payment Status', 'Payment Verification', 'Overall Status', 'Registered At'];
+    const headers = ['#', 'Event Type', 'Event', 'Name', 'Team Name', 'Email', 'Phone', 'Institute', 'Qualification', 'Team Members', 'Payment Status', 'Payment Verification', 'Overall Status', 'Registered At'];
     const rows = filtered.map((reg, i) => {
       const user = reg.users;
       const team = reg.teams;
       const members = reg.team_members?.map(m => `${m.name} (${m.email})`).join('; ') || '';
-      const participant = reg.team_id
-        ? `${team?.team_name ?? 'Unnamed Team'} (${team?.team_code ?? ''})`
-        : user?.name ?? 'Solo Participant';
+      const participantName = reg.team_id 
+        ? (reg.team_members?.find(m => m.role === 'leader')?.name || reg.team_members?.[0]?.name || '—')
+        : (user?.name || '—');
+      const teamName = reg.team_id ? (team?.team_name || '—') : '—';
       const email = reg.team_id ? (team?.leader_email || '—') : (user?.email || '—');
       const phone = reg.phone_number || reg.team_members?.[0]?.phone_number || '—';
 
@@ -176,7 +177,8 @@ export default function AdminDashboard() {
         i + 1,
         reg.event_type.toUpperCase(),
         reg.events?.name ?? '—',
-        participant,
+        participantName,
+        teamName,
         email,
         phone,
         reg.institute_name || '—',
@@ -359,8 +361,8 @@ export default function AdminDashboard() {
               <thead className="bg-gray-100 border-b">
                 <tr>
                   <th className="px-3 py-3 text-left font-semibold">#</th>
-                  <th className="px-3 py-3 text-left font-semibold">First Name</th>
-                  <th className="px-3 py-3 text-left font-semibold">Last Name</th>
+                  <th className="px-3 py-3 text-left font-semibold">Name</th>
+                  <th className="px-3 py-3 text-left font-semibold">Team Name</th>
                   <th className="px-3 py-3 text-left font-semibold">Phone</th>
                   <th className="px-3 py-3 text-left font-semibold">Email</th>
                   <th className="px-3 py-3 text-left font-semibold">Event</th>
@@ -383,8 +385,11 @@ export default function AdminDashboard() {
                     const globalIdx = (currentPage - 1) * itemsPerPage + idx + 1;
                     const user = reg.users;
                     const team = reg.teams;
-                    const firstName = reg.team_id ? team?.team_name?.split(' ')[0] : user?.name?.split(' ')[0];
-                    const lastName = reg.team_id ? team?.team_name?.split(' ').slice(1).join(' ') : user?.name?.split(' ').slice(1).join(' ');
+                    // For team events, show leader name; for individual, show participant name
+                    const participantName = reg.team_id 
+                      ? (reg.team_members?.find(m => m.role === 'leader')?.name || reg.team_members?.[0]?.name || '—')
+                      : (user?.name || '—');
+                    const teamName = reg.team_id ? (team?.team_name || '—') : '—';
                     const phone = reg.phone_number || reg.team_members?.[0]?.phone_number || '—';
                     const email = reg.team_id ? team?.leader_email : user?.email;
                     const isFree = isFreeEvent(reg);
@@ -393,8 +398,8 @@ export default function AdminDashboard() {
                     return (
                       <tr key={reg.id} className="border-b hover:bg-gray-50">
                         <td className="px-3 py-3">{globalIdx}</td>
-                        <td className="px-3 py-3">{firstName || '—'}</td>
-                        <td className="px-3 py-3">{lastName || '—'}</td>
+                        <td className="px-3 py-3">{participantName}</td>
+                        <td className="px-3 py-3">{teamName}</td>
                         <td className="px-3 py-3">{phone}</td>
                         <td className="px-3 py-3 text-blue-600">{email || '—'}</td>
                         <td className="px-3 py-3">

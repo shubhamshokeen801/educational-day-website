@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { createClient } from "@/app/lib/supabaseClient";
 import {
   User,
@@ -86,7 +87,10 @@ export default function ProfilePage() {
 
       // Validate file size (5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert("File size must be less than 5MB");
+        toast.warning(
+              `File size must be less than 5MB`
+            );
+        /* alert("File size must be less than 5MB"); */
         return;
       }
 
@@ -98,7 +102,10 @@ export default function ProfilePage() {
         "image/webp",
       ];
       if (!allowedTypes.includes(file.type)) {
-        alert("Only image files (JPEG, PNG, WebP) are allowed");
+        /* alert("Only image files (JPEG, PNG, WebP) are allowed"); */
+        toast.warning(
+              `Only image files (JPEG, PNG, WebP) are allowed`
+            );
         return;
       }
 
@@ -127,13 +134,19 @@ export default function ProfilePage() {
 
         setUploadProgress({ ...uploadProgress, [registrationId]: 100 });
 
-        alert(data.message || "Payment proof uploaded successfully!");
+        /* alert(data.message || "Payment proof uploaded successfully!"); */
+        toast.success(
+              `Payment proof uploaded successfully!`
+            );
 
         // Reload profile to reflect updated payment status
         await loadProfile();
       } catch (error: any) {
         console.error("Error uploading payment:", error);
-        alert(error.message || "Failed to upload payment proof");
+        /* alert(error.message || "Failed to upload payment proof"); */
+        toast.error(
+              `Failed to upload payment proof`
+            );
       } finally {
         setUploadingFor(null);
         setUploadProgress({ ...uploadProgress, [registrationId]: 0 });
