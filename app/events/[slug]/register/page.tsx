@@ -142,12 +142,12 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
                     year: 'numeric' 
                   })}
                 </p>
-                {/* <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {startDate.toLocaleTimeString('en-US', { 
                     hour: '2-digit', 
                     minute: '2-digit' 
                   })}
-                </p> */}
+                </p>
               </div>
 
               {/* Registration Fee */}

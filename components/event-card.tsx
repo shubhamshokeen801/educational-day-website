@@ -98,7 +98,7 @@ export default function EventCard() {
             Discover Learning Opportunities
           </h2>
           <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400">
-            Join educational events designed to enhance your skills and knowledge
+            Join Tech Fest Events to Elevate Your Skills and Knowledge
           </p>
         </motion.div>
       </div>

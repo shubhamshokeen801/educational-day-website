@@ -4,7 +4,8 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/app/lib/supabaseClient';
-import { Phone, Building2, GraduationCap, Users, CheckCircle2, AlertCircle, UserPlus, FileText, Camera } from 'lucide-react';
+import { Phone, Building2, GraduationCap, Users, CheckCircle2, AlertCircle, UserPlus, FileText, Camera, Loader2 } from 'lucide-react';
+
 import { RegisterAuthButton } from '@/components/RegisterAuthButton';
 import { toast } from 'sonner';
 
@@ -37,6 +38,7 @@ export default function MUNRegisterFormClient({ munEvent }: MUNRegisterFormProps
   });
 
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
 
   const showMessage = (text: string, type: 'error' | 'success' = 'error') => {
@@ -116,6 +118,23 @@ export default function MUNRegisterFormClient({ munEvent }: MUNRegisterFormProps
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      {/* Redirecting Overlay */}
+      {redirecting && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
+            <div className="flex justify-center mb-4">
+              <Loader2 className="w-16 h-16 text-purple-600 animate-spin" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              Redirecting to Payment
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              Please wait while we redirect you to the payment page...
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-600 rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 mb-6 sm:mb-8 text-white">
         <div className="flex items-center gap-3 sm:gap-4 mb-4">
