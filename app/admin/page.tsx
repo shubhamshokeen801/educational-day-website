@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { Download, ChevronLeft, ChevronRight, Search, X, ExternalLink, Users } from 'lucide-react';
+import { Download, ChevronLeft, ChevronRight, Search, X, ExternalLink, Users, UserCheck } from 'lucide-react';
 
 interface RegistrationRow {
   id: string;
@@ -16,6 +16,10 @@ interface RegistrationRow {
   qualification?: string;
   payment_proof_url?: string;
   event_type: 'regular' | 'mun';
+  portfolio_preference_1?: string;
+  portfolio_preference_2?: string;
+  ip_category?: string;
+  referral_name?: string;
   users?: { name: string; email: string };
   teams?: { team_name: string; team_code: string; leader_email?: string };
   team_members?: { name: string; email: string; phone_number?: string; role?: string }[];
@@ -34,9 +38,11 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
+  const [selectedReferrals, setSelectedReferrals] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<'all' | 'verified' | 'pending'>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [showEventDropdown, setShowEventDropdown] = useState(false);
+  const [showReferralDropdown, setShowReferralDropdown] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState('');
@@ -63,6 +69,17 @@ export default function AdminDashboard() {
     if (!eventsData.error) setEvents(eventsData);
     setLoading(false);
   };
+
+  // Extract unique referral names (memoized to avoid recalculation)
+  const uniqueReferrals = useMemo(() => {
+    const referrals = new Set<string>();
+    registrations.forEach(reg => {
+      if (reg.referral_name && reg.referral_name.trim()) {
+        referrals.add(reg.referral_name.trim());
+      }
+    });
+    return Array.from(referrals).sort();
+  }, [registrations]);
 
   const updateStatus = async (id: string, field: 'payment_verification' | 'status', value: string) => {
     setUpdatingId(id);
@@ -106,13 +123,20 @@ export default function AdminDashboard() {
     if (statusFilter === 'verified') {
       result = result.filter(r => r.status === 'verified');
     } else if (statusFilter === 'pending') {
-      result = result.filter(r => r.payment_verification === 'pending');
+      result = result.filter(r => r.payment_status === 'pending');
     }
 
     // Event filter
     if (selectedEvents.length > 0) {
       result = result.filter(r => 
         r.events?.name && selectedEvents.includes(r.events.name)
+      );
+    }
+
+    // Referral filter
+    if (selectedReferrals.length > 0) {
+      result = result.filter(r => 
+        r.referral_name && selectedReferrals.includes(r.referral_name)
       );
     }
 
@@ -135,6 +159,10 @@ export default function AdminDashboard() {
         team?.leader_email?.toLowerCase().includes(query) ||
         reg.institute_name?.toLowerCase().includes(query) ||
         reg.qualification?.toLowerCase().includes(query) ||
+        reg.portfolio_preference_1?.toLowerCase().includes(query) ||
+        reg.portfolio_preference_2?.toLowerCase().includes(query) ||
+        reg.ip_category?.toLowerCase().includes(query) ||
+        reg.referral_name?.toLowerCase().includes(query) ||
         members.some(m =>
           m.name?.toLowerCase().includes(query) ||
           m.email?.toLowerCase().includes(query)
@@ -149,10 +177,11 @@ export default function AdminDashboard() {
     });
 
     return result;
-  }, [searchQuery, selectedEvents, statusFilter, registrations]);
+  }, [searchQuery, selectedEvents, selectedReferrals, statusFilter, registrations]);
 
   const verifiedCount = registrations.filter(r => r.status === 'verified').length;
   const pendingPaymentCount = registrations.filter(r => r.payment_verification === 'pending' && !isFreeEvent(r)).length;
+  const referralCount = registrations.filter(r => r.referral_name && r.referral_name.trim()).length;
 
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const paginatedData = filtered.slice(
@@ -161,7 +190,13 @@ export default function AdminDashboard() {
   );
 
   const downloadCSV = () => {
-    const headers = ['#', 'Event Type', 'Event', 'Name', 'Team Name', 'Email', 'Phone', 'Institute', 'Qualification', 'Team Members', 'Payment Status', 'Payment Verification', 'Overall Status', 'Registered At'];
+    const headers = [
+      '#', 'Event Type', 'Event', 'Name', 'Team Name', 'Email', 'Phone', 
+      'Institute', 'Qualification', 'Portfolio Pref 1', 'Portfolio Pref 2', 
+      'IP Category', 'Referral Name', 'Team Members', 'Payment Status', 
+      'Payment Verification', 'Overall Status', 'Registered At'
+    ];
+    
     const rows = filtered.map((reg, i) => {
       const user = reg.users;
       const team = reg.teams;
@@ -183,6 +218,10 @@ export default function AdminDashboard() {
         phone,
         reg.institute_name || '—',
         reg.qualification || '—',
+        reg.portfolio_preference_1 || '—',
+        reg.portfolio_preference_2 || '—',
+        reg.ip_category || '—',
+        reg.referral_name || '—',
         members || '—',
         isFreeEvent(reg) ? '—' : reg.payment_status,
         isFreeEvent(reg) ? '—' : reg.payment_verification,
@@ -216,13 +255,13 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 pt-28">
-      <div className="max-w-[1600px] mx-auto">
+      <div className="max-w-[1800px] mx-auto">
         {/* Header */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
             <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
             
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <button
                 onClick={() => {
                   setStatusFilter('verified');
@@ -262,6 +301,9 @@ export default function AdminDashboard() {
               >
                 Total: <span className="font-bold">{registrations.length}</span>
               </button>
+              {/* <div className="px-4 py-2 bg-purple-50 border border-purple-300 rounded-lg text-sm font-medium text-purple-700">
+                With Referrals: <span className="font-bold">{referralCount}</span>
+              </div> */}
             </div>
           </div>
 
@@ -274,7 +316,7 @@ export default function AdminDashboard() {
                 type="text"
                 value={searchQuery}
                 onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                placeholder="Search by name, email, team, phone, qualification..."
+                placeholder="Search by name, email, team, phone, qualification, referral..."
                 className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               {searchQuery && (
@@ -343,6 +385,72 @@ export default function AdminDashboard() {
               )}
             </div>
 
+            {/* Referral Filter */}
+            <div className="relative">
+              <button
+                onClick={() => setShowReferralDropdown(!showReferralDropdown)}
+                className="px-4 py-2 border border-purple-300 bg-purple-50 rounded-lg hover:bg-purple-100 flex items-center gap-2 min-w-[200px]"
+              >
+                <UserCheck className="w-4 h-4 text-purple-600" />
+                <span className="flex-1 text-left text-sm text-purple-700">
+                  {selectedReferrals.length === 0 ? 'Filter by Referrals' : `${selectedReferrals.length} referrals`}
+                </span>
+                <ChevronRight className={`w-4 h-4 text-purple-600 transition-transform ${showReferralDropdown ? 'rotate-90' : ''}`} />
+              </button>
+              
+              {showReferralDropdown && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowReferralDropdown(false)} />
+                  <div className="absolute z-20 mt-1 w-64 bg-white border border-purple-300 rounded-lg shadow-lg max-h-80 overflow-auto">
+                    {selectedReferrals.length > 0 && (
+                      <div className="p-2 border-b bg-purple-50">
+                        <button
+                          onClick={() => { setSelectedReferrals([]); setCurrentPage(1); }}
+                          className="text-xs text-purple-600 hover:text-purple-700 flex items-center gap-1"
+                        >
+                          <X className="w-3 h-3" /> Clear all
+                        </button>
+                      </div>
+                    )}
+                    {uniqueReferrals.length === 0 ? (
+                      <div className="px-3 py-2 text-sm text-gray-500">No referrals found</div>
+                    ) : (
+                      uniqueReferrals.map(referral => (
+                        <button
+                          key={referral}
+                          onClick={() => {
+                            setSelectedReferrals(prev =>
+                              prev.includes(referral)
+                                ? prev.filter(r => r !== referral)
+                                : [...prev, referral]
+                            );
+                            setCurrentPage(1);
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-purple-50 text-left"
+                        >
+                          <div className={`w-4 h-4 border rounded flex items-center justify-center ${
+                            selectedReferrals.includes(referral)
+                              ? 'bg-purple-600 border-purple-600'
+                              : 'border-gray-300'
+                          }`}>
+                            {selectedReferrals.includes(referral) && (
+                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </div>
+                          <span className="flex-1 font-medium">{referral}</span>
+                          <span className="text-xs text-gray-500">
+                            ({registrations.filter(r => r.referral_name === referral).length})
+                          </span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
             {/* Download */}
             <button
               onClick={downloadCSV}
@@ -368,8 +476,12 @@ export default function AdminDashboard() {
                   <th className="px-3 py-3 text-left font-semibold">Event</th>
                   <th className="px-3 py-3 text-left font-semibold">Institution</th>
                   <th className="px-3 py-3 text-left font-semibold">Qualification</th>
+                  <th className="px-3 py-3 text-left font-semibold">Portfolio Pref 1</th>
+                  <th className="px-3 py-3 text-left font-semibold">Portfolio Pref 2</th>
+                  <th className="px-3 py-3 text-left font-semibold">IP Category</th>
+                  <th className="px-3 py-3 text-left font-semibold">Referral</th>
                   <th className="px-3 py-3 text-left font-semibold">Team Members</th>
-                  <th className="px-3 py-3 text-left font-semibold">Payment Screenshot</th>
+                  <th className="px-3 py-3 text-left font-semibold">Payment SS</th>
                   <th className="px-3 py-3 text-left font-semibold">Payment Status</th>
                   <th className="px-3 py-3 text-left font-semibold">Payment Verification</th>
                   <th className="px-3 py-3 text-left font-semibold">Status</th>
@@ -377,15 +489,14 @@ export default function AdminDashboard() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={13} className="px-4 py-8 text-center text-gray-500">Loading...</td></tr>
+                  <tr><td colSpan={17} className="px-4 py-8 text-center text-gray-500">Loading...</td></tr>
                 ) : paginatedData.length === 0 ? (
-                  <tr><td colSpan={13} className="px-4 py-8 text-center text-gray-500">No registrations found</td></tr>
+                  <tr><td colSpan={17} className="px-4 py-8 text-center text-gray-500">No registrations found</td></tr>
                 ) : (
                   paginatedData.map((reg, idx) => {
                     const globalIdx = (currentPage - 1) * itemsPerPage + idx + 1;
                     const user = reg.users;
                     const team = reg.teams;
-                    // For team events, show leader name; for individual, show participant name
                     const participantName = reg.team_id 
                       ? (reg.team_members?.find(m => m.role === 'leader')?.name || reg.team_members?.[0]?.name || '—')
                       : (user?.name || '—');
@@ -409,8 +520,16 @@ export default function AdminDashboard() {
                           </div>
                         </td>
                         <td className="px-3 py-3">{reg.institute_name || '—'}</td>
+                        <td className="px-3 py-3">{reg.qualification || '—'}</td>
+                        <td className="px-3 py-3">{reg.portfolio_preference_1 || '—'}</td>
+                        <td className="px-3 py-3">{reg.portfolio_preference_2 || '—'}</td>
+                        <td className="px-3 py-3">{reg.ip_category || '—'}</td>
                         <td className="px-3 py-3">
-                          {reg.event_type === 'mun' ? (reg.qualification || '—') : '—'}
+                          {reg.referral_name ? (
+                            <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-medium">
+                              {reg.referral_name}
+                            </span>
+                          ) : '—'}
                         </td>
                         <td className="px-3 py-3 text-center">
                           {hasTeamMembers ? (

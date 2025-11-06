@@ -9,13 +9,17 @@ export async function POST(req: Request) {
       munEventId, 
       phoneNumber, 
       instituteName, 
-      qualification
+      qualification,
+      referralName,
+      portfolioPreference1,
+      portfolioPreference2,
+      ipCategory
     } = body;
     
     // Validate required fields
     if (!munEventId || !phoneNumber || !instituteName || !qualification) {
       return NextResponse.json(
-        { error: 'All fields are required' }, 
+        { error: 'All required fields must be filled' }, 
         { status: 400 }
       );
     }
@@ -39,7 +43,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if MUN event exists
+    // Check if MUN event exists and get event details
     const { data: munEvent, error: eventErr } = await supabase
       .from('mun_events')
       .select('*')
@@ -68,6 +72,40 @@ export async function POST(req: Request) {
       );
     }
 
+    // Get event name to determine required fields
+    const eventName = munEvent.name.toUpperCase();
+
+    // Helper function to check if event is exactly IP (not AIPPM)
+    const isIPEvent = (name: string) => {
+      // Check if it's IP but NOT AIPPM
+      return name.includes('IP') && !name.includes('AIPPM');
+    };
+
+    // Event-specific validation based on event name
+    if (eventName.includes('WHO') || eventName.includes('AIPPM')) {
+      if (!portfolioPreference1 || !portfolioPreference2) {
+        return NextResponse.json(
+          { error: 'Both portfolio preferences are required for this event' }, 
+          { status: 400 }
+        );
+      }
+      if (portfolioPreference1.trim() === portfolioPreference2.trim()) {
+        return NextResponse.json(
+          { error: 'Portfolio preferences must be different' }, 
+          { status: 400 }
+        );
+      }
+    }
+
+    if (isIPEvent(eventName)) {
+      if (!ipCategory || !['Journalism', 'Photography'].includes(ipCategory)) {
+        return NextResponse.json(
+          { error: 'Valid IP category is required (Journalism or Photography)' }, 
+          { status: 400 }
+        );
+      }
+    }
+
     // Check if user already registered for this MUN event
     const { data: existingReg } = await supabase
       .from('registration')
@@ -83,19 +121,37 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create MUN registration in the unified registration table
+    // Prepare registration data
+    const registrationData: any = {
+      mun_event_id: munEventId,
+      user_id: user.id,
+      phone_number: phoneNumber,
+      institute_name: instituteName,
+      qualification: qualification,
+      payment_status: 'pending',
+      status: 'pending',
+      registered_at: new Date().toISOString(),
+    };
+
+    // Add referral name in uppercase if provided
+    if (referralName && referralName.trim()) {
+      registrationData.referral_name = referralName.trim().toUpperCase();
+    }
+
+    // Add event-specific fields based on event name
+    if (eventName.includes('WHO') || eventName.includes('AIPPM')) {
+      registrationData.portfolio_preference_1 = portfolioPreference1.trim();
+      registrationData.portfolio_preference_2 = portfolioPreference2.trim();
+    }
+
+    if (isIPEvent(eventName)) {
+      registrationData.ip_category = ipCategory;
+    }
+
+    // Create MUN registration
     const { data: registration, error: regErr } = await supabase
       .from('registration')
-      .insert({
-        mun_event_id: munEventId,
-        user_id: user.id,
-        phone_number: phoneNumber,
-        institute_name: instituteName,
-        qualification: qualification,
-        payment_status: 'pending',
-        status: 'pending',
-        registered_at: new Date().toISOString(),
-      })
+      .insert(registrationData)
       .select()
       .single();
 

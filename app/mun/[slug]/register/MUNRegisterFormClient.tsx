@@ -1,10 +1,10 @@
 // app/mun/[slug]/register/MUNRegisterFormClient.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/app/lib/supabaseClient';
-import { Phone, Building2, GraduationCap, Users, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Phone, Building2, GraduationCap, Users, CheckCircle2, AlertCircle, UserPlus, FileText, Camera } from 'lucide-react';
 import { RegisterAuthButton } from '@/components/RegisterAuthButton';
 import { toast } from 'sonner';
 
@@ -16,10 +16,24 @@ export default function MUNRegisterFormClient({ munEvent }: MUNRegisterFormProps
   const router = useRouter();
   const supabase = createClient();
 
+  // Determine event type from event name
+  const eventType = useMemo(() => {
+    const name = munEvent.name.toUpperCase();
+    if (name.includes('WHO')) return 'WHO';
+    if (name.includes('AIPPM')) return 'AIPPM';
+    // Check if it's IP but NOT AIPPM
+    if (name.includes('IP') && !name.includes('AIPPM')) return 'IP';
+    return 'OTHER';
+  }, [munEvent.name]);
+
   const [formData, setFormData] = useState({
     phoneNumber: '',
     instituteName: '',
     qualification: '',
+    referralName: '',
+    portfolioPreference1: '',
+    portfolioPreference2: '',
+    ipCategory: '' as 'Journalism' | 'Photography' | '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -35,7 +49,7 @@ export default function MUNRegisterFormClient({ munEvent }: MUNRegisterFormProps
   };
 
   const handleSubmit = async () => {
-    // Validation
+    // Basic validation
     if (!formData.phoneNumber.trim()) {
       return showMessage('Please enter your phone number.');
     }
@@ -49,6 +63,20 @@ export default function MUNRegisterFormClient({ munEvent }: MUNRegisterFormProps
       return showMessage('Please enter your qualification.');
     }
 
+    // Event-specific validation based on event name
+    if (eventType === 'WHO' || eventType === 'AIPPM') {
+      if (!formData.portfolioPreference1.trim() || !formData.portfolioPreference2.trim()) {
+        return showMessage('Please enter both portfolio preferences.');
+      }
+      if (formData.portfolioPreference1.trim() === formData.portfolioPreference2.trim()) {
+        return showMessage('Portfolio preferences must be different.');
+      }
+    }
+
+    if (eventType === 'IP' && !formData.ipCategory) {
+      return showMessage('Please select a category for IP.');
+    }
+
     try {
       setLoading(true);
       const res = await fetch('/api/mun/register', {
@@ -59,6 +87,10 @@ export default function MUNRegisterFormClient({ munEvent }: MUNRegisterFormProps
           phoneNumber: formData.phoneNumber.replace(/\s/g, ''),
           instituteName: formData.instituteName.trim(),
           qualification: formData.qualification.trim(),
+          referralName: formData.referralName.trim(),
+          portfolioPreference1: formData.portfolioPreference1.trim(),
+          portfolioPreference2: formData.portfolioPreference2.trim(),
+          ipCategory: formData.ipCategory,
         }),
       });
 
@@ -67,10 +99,7 @@ export default function MUNRegisterFormClient({ munEvent }: MUNRegisterFormProps
         return showMessage(data.error || 'Error during registration.');
       }
 
-      /* showMessage('MUN registration successful!', 'success'); */
-      toast.success(
-              `Mun registration successful!`
-            );
+      toast.success('MUN registration successful!');
       
       // Redirect to payment page with type parameter
       router.push(`/payment?reg=${data.registration.id}&type=mun`);
@@ -192,6 +221,116 @@ export default function MUNRegisterFormClient({ munEvent }: MUNRegisterFormProps
             </div>
           </div>
 
+          {/* Referral Name */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Referral Name (Optional)
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <UserPlus className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Enter referral name if any"
+                value={formData.referralName}
+                onChange={(e) => handleInputChange('referralName', e.target.value.toUpperCase())}
+                className="w-full pl-12 border-2 border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 sm:py-4 focus:ring-4 focus:ring-purple-200 dark:focus:ring-purple-900 focus:border-purple-400 dark:focus:border-purple-600 focus:outline-none text-sm sm:text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-800 transition-all uppercase"
+              />
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Referral name will be automatically converted to uppercase
+            </p>
+          </div>
+
+          {/* Portfolio Preferences for WHO and AIPPM */}
+          {(eventType === 'WHO' || eventType === 'AIPPM') && (
+            <div className="space-y-4 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-xl border-2 border-purple-200 dark:border-purple-800">
+              <h4 className="font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                Portfolio Preferences for {eventType}
+              </h4>
+              
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Preference 1 <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <FileText className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Enter your first portfolio preference"
+                    value={formData.portfolioPreference1}
+                    onChange={(e) => handleInputChange('portfolioPreference1', e.target.value)}
+                    className="w-full pl-12 border-2 border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:ring-4 focus:ring-purple-200 dark:focus:ring-purple-900 focus:border-purple-400 dark:focus:border-purple-600 focus:outline-none text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-800 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Preference 2 <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <FileText className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Enter your second portfolio preference"
+                    value={formData.portfolioPreference2}
+                    onChange={(e) => handleInputChange('portfolioPreference2', e.target.value)}
+                    className="w-full pl-12 border-2 border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:ring-4 focus:ring-purple-200 dark:focus:ring-purple-900 focus:border-purple-400 dark:focus:border-purple-600 focus:outline-none text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-800 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-purple-100 dark:bg-purple-900/20 rounded-lg p-3 text-xs text-purple-800 dark:text-purple-200">
+                <AlertCircle className="h-4 w-4 inline mr-1" />
+                Both preferences are required and must be different
+              </div>
+            </div>
+          )}
+
+          {/* IP Category Selection */}
+          {eventType === 'IP' && (
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl border-2 border-blue-200 dark:border-blue-800">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                <Camera className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                Select Category for IP <span className="text-red-500">*</span>
+              </label>
+              <div className="space-y-3">
+                <label className="flex items-center p-4 bg-white dark:bg-neutral-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition-all">
+                  <input
+                    type="radio"
+                    name="ipCategory"
+                    value="Journalism"
+                    checked={formData.ipCategory === 'Journalism'}
+                    onChange={(e) => handleInputChange('ipCategory', e.target.value)}
+                    className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  />
+                  <FileText className="h-5 w-5 text-gray-500 mx-3" />
+                  <span className="font-medium text-gray-900 dark:text-gray-100">Journalism</span>
+                </label>
+                
+                <label className="flex items-center p-4 bg-white dark:bg-neutral-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition-all">
+                  <input
+                    type="radio"
+                    name="ipCategory"
+                    value="Photography"
+                    checked={formData.ipCategory === 'Photography'}
+                    onChange={(e) => handleInputChange('ipCategory', e.target.value)}
+                    className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  />
+                  <Camera className="h-5 w-5 text-gray-500 mx-3" />
+                  <span className="font-medium text-gray-900 dark:text-gray-100">Photography</span>
+                </label>
+              </div>
+            </div>
+          )}
+
           {/* Submit Button */}
           <div className="pt-4">
             <RegisterAuthButton
@@ -213,6 +352,12 @@ export default function MUNRegisterFormClient({ munEvent }: MUNRegisterFormProps
                 </p>
                 <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
                   <li>• Complete the registration form with accurate details</li>
+                  {(eventType === 'WHO' || eventType === 'AIPPM') && (
+                    <li>• Provide two different portfolio preferences</li>
+                  )}
+                  {eventType === 'IP' && (
+                    <li>• Select your preferred category (Journalism/Photography)</li>
+                  )}
                   <li>• You will be redirected to the payment page</li>
                   <li>• Upload payment proof to confirm registration</li>
                   <li>• Receive confirmation email within 24-48 hours</li>

@@ -1,3 +1,4 @@
+// app/api/registrations/route.ts
 import { NextResponse } from 'next/server';
 import { createServerClientInstance } from '@/app/lib/supabaseServerClient';
 
@@ -20,6 +21,10 @@ export async function GET() {
       payment_proof_url,
       event_id,
       mun_event_id,
+      portfolio_preference_1,
+      portfolio_preference_2,
+      ip_category,
+      referral_name,
       users:user_id (name, email),
       teams:team_id (
         team_name, 
@@ -63,8 +68,15 @@ export async function GET() {
 
     // Determine event info (regular or MUN)
     const eventInfo = item.events 
-      ? { name: Array.isArray(item.events) ? item.events[0]?.name : item.events?.name, type: 'regular' }
-      : { name: Array.isArray(item.mun_events) ? item.mun_events[0]?.name : item.mun_events?.name, type: 'mun' };
+      ? { 
+          name: Array.isArray(item.events) ? item.events[0]?.name : item.events?.name, 
+          is_paid: Array.isArray(item.events) ? item.events[0]?.is_paid : item.events?.is_paid,
+          registration_fee: Array.isArray(item.events) ? item.events[0]?.registration_fee : item.events?.registration_fee
+        }
+      : { 
+          name: Array.isArray(item.mun_events) ? item.mun_events[0]?.name : item.mun_events?.name,
+          registration_fee: Array.isArray(item.mun_events) ? item.mun_events[0]?.registration_fee : item.mun_events?.registration_fee
+        };
 
     return {
       id: item.id,
@@ -78,7 +90,11 @@ export async function GET() {
       institute_name: item.institute_name,
       qualification: item.qualification,
       payment_proof_url: item.payment_proof_url,
-      event_type: eventInfo.type,
+      portfolio_preference_1: item.portfolio_preference_1,
+      portfolio_preference_2: item.portfolio_preference_2,
+      ip_category: item.ip_category,
+      referral_name: item.referral_name,
+      event_type: item.mun_event_id ? 'mun' : 'regular',
       events: eventInfo,
       teams: team
         ? {
