@@ -112,8 +112,8 @@ export default function RegisterFormClient({ event }: { event: any }) {
           // Then redirect after another 2 seconds
           setTimeout(() => {
             router.push(`/payment?reg=${data.registration.id}&type=regular`);
-          }, 2000);
-        }, 5000);
+          }, 1500);
+        }, 3000);
       }
     } catch (err) {
       showMessage('Unexpected error. Try again.');
@@ -387,7 +387,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
                           </div>
                         </div>
 
-                        {/* Note about payment redirect - will auto redirect if paid event */}
+                        {/* it will auto redirect if paid event */}
                         {!event.is_paid ? (
                           <button
                             onClick={() => router.push('/profile')}
@@ -540,7 +540,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     maxLength={10}
-                    className="w-full pl-10 border-2 border-indigo-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
+                    className="w-full pl-10! border-2 border-indigo-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
                   />
                 </div>
               </div>

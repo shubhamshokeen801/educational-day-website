@@ -1,6 +1,7 @@
 // app/api/team/join/route.ts
 import { NextResponse } from 'next/server';
 import { createServerClientInstance } from '@/app/lib/supabaseServerClient';
+import { sendEmail, emailTemplates } from '@/app/lib/emailService';
 
 export async function POST(req: Request) {
   try {
@@ -33,6 +34,13 @@ export async function POST(req: Request) {
       );
     }
 
+    // Get user details
+    const { data: userData } = await supabase
+      .from('users')
+      .select('name, email')
+      .eq('id', user.id)
+      .single();
+
     // Find team by code
     const { data: team, error: teamErr } = await supabase
       .from('teams')
@@ -53,6 +61,13 @@ export async function POST(req: Request) {
         { status: 404 }
       );
     }
+
+    // Get team leader details
+    const { data: leaderData } = await supabase
+      .from('users')
+      .select('name')
+      .eq('id', team.created_by)
+      .single();
 
     // Get event data
     const { data: event, error: eventErr } = await supabase
@@ -172,17 +187,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // For paid events, optionally check if leader has paid
-    // (You can uncomment this if you want to enforce payment before allowing joins)
-    /*
-    if (event.is_paid && teamRegistration.payment_status !== 'completed') {
-      return NextResponse.json(
-        { error: 'Team registration payment is pending. Please wait for team leader to complete payment.' },
-        { status: 400 }
-      );
-    }
-    */
-
     // Add member with phone number (NO separate registration - only join team_members)
     const { data: newMember, error: joinErr } = await supabase
       .from('team_members')
@@ -201,6 +205,23 @@ export async function POST(req: Request) {
         { error: joinErr.message }, 
         { status: 500 }
       );
+    }
+
+    // Send confirmation email
+    if (userData?.email) {
+      const emailTemplate = emailTemplates.teamJoin(
+        userData.name,
+        event.name,
+        team.team_name,
+        leaderData?.name || 'Team Leader',
+        event.is_paid
+      );
+      
+      await sendEmail({
+        to: userData.email,
+        subject: emailTemplate.subject,
+        html: emailTemplate.html,
+      });
     }
 
     const message = event.is_paid

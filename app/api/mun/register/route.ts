@@ -1,6 +1,7 @@
 // app/api/mun/register/route.ts
 import { NextResponse } from 'next/server';
 import { createServerClientInstance } from '@/app/lib/supabaseServerClient';
+import { sendEmail, emailTemplates } from '@/app/lib/emailService';
 
 export async function POST(req: Request) {
   try {
@@ -42,6 +43,13 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
+
+    // Get user details
+    const { data: userData } = await supabase
+      .from('users')
+      .select('name, email')
+      .eq('id', user.id)
+      .single();
 
     // Check if MUN event exists and get event details
     const { data: munEvent, error: eventErr } = await supabase
@@ -163,10 +171,30 @@ export async function POST(req: Request) {
       );
     }
 
+    // Send confirmation email
+    if (userData?.email) {
+      const emailTemplate = emailTemplates.munRegistration(
+        userData.name,
+        munEvent.name,
+        munEvent.registration_fee,
+        instituteName,
+        qualification,
+        portfolioPreference1,
+        portfolioPreference2,
+        ipCategory
+      );
+      
+      await sendEmail({
+        to: userData.email,
+        subject: emailTemplate.subject,
+        html: emailTemplate.html,
+      });
+    }
+
     return NextResponse.json({
       success: true,
       registration,
-      message: 'Successfully registered for MUN event! Please complete payment to confirm your registration.',
+      message: 'Successfully registered for MUN event! Please complete payment to confirm your registration. Check your email for details.',
     });
   } catch (err) {
     console.error('Unexpected error:', err);

@@ -81,7 +81,7 @@ export const FAQ = () => {
             </div>
 
             {/* Contact Card */}
-            <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-6 sm:p-8 shadow-2xl">
+            {/* <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-6 sm:p-8 shadow-2xl">
               <div className="flex items-start gap-4">
                 <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
                   <MessageCircle className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
@@ -102,7 +102,7 @@ export const FAQ = () => {
                   </a>
                 </div>
               </div>
-            </div>
+            </div> */}
           </motion.div>
 
           {/* Right Section - FAQ Accordion */}

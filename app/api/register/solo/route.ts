@@ -1,6 +1,7 @@
 // app/api/register/solo/route.ts
 import { NextResponse } from 'next/server';
 import { createServerClientInstance } from '@/app/lib/supabaseServerClient';
+import { sendEmail, emailTemplates } from '@/app/lib/emailService';
 
 export async function POST(req: Request) {
   try {
@@ -25,6 +26,13 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
+
+    // Get user details
+    const { data: userData } = await supabase
+      .from('users')
+      .select('name, email')
+      .eq('id', user.id)
+      .single();
 
     // Check if event exists
     const { data: event, error: eventErr } = await supabase
@@ -124,6 +132,22 @@ export async function POST(req: Request) {
         { error: regError.message }, 
         { status: 500 }
       );
+    }
+
+    // Send confirmation email
+    if (userData?.email) {
+      const emailTemplate = emailTemplates.soloRegistration(
+        userData.name,
+        event.name,
+        event.is_paid,
+        event.registration_fee
+      );
+      
+      await sendEmail({
+        to: userData.email,
+        subject: emailTemplate.subject,
+        html: emailTemplate.html,
+      });
     }
 
     // Return appropriate message based on payment requirement

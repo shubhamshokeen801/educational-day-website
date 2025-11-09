@@ -124,7 +124,7 @@ const staticEvents: StaticEvent[] = [
     date: "12th Nov",
     time: "9:00 AM",
     activity: "Volleyball",
-    venue: "",
+    venue: "Ground",
     category: "Tech Fest",
   },
   {
@@ -132,7 +132,7 @@ const staticEvents: StaticEvent[] = [
     date: "12th Nov",
     time: "11:30 AM",
     activity: "Rangmanch",
-    venue: "",
+    venue: "Auditorium",
     category: "Tech Fest",
   },
   {
@@ -140,7 +140,7 @@ const staticEvents: StaticEvent[] = [
     date: "12th Nov",
     time: "1:30 PM",
     activity: "Code Avengers",
-    venue: "",
+    venue: "Computer Lab",
     category: "Tech Fest",
   },
   {
@@ -148,7 +148,7 @@ const staticEvents: StaticEvent[] = [
     date: "13th Nov",
     time: "10:00 AM",
     activity: "Tug of War",
-    venue: "",
+    venue: "Ground",
     category: "Tech Fest",
   },
   {
@@ -156,7 +156,7 @@ const staticEvents: StaticEvent[] = [
     date: "13th Nov",
     time: "3:30 PM",
     activity: "Fandango",
-    venue: "",
+    venue: "Auditorium",
     category: "Tech Fest",
   },
 ];

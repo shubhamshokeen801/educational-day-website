@@ -1,6 +1,7 @@
 // app/api/mun/payment/route.ts
 import { NextResponse } from 'next/server';
 import { createServerClientInstance } from '@/app/lib/supabaseServerClient';
+import { sendEmail, emailTemplates } from '@/app/lib/emailService';
 
 export async function POST(req: Request) {
   try {
@@ -51,6 +52,13 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
+
+    // Get user details
+    const { data: userData } = await supabase
+      .from('users')
+      .select('name, email')
+      .eq('id', user.id)
+      .single();
 
     // Check if registration exists and belongs to user
     const { data: registration, error: regErr } = await supabase
@@ -131,10 +139,24 @@ export async function POST(req: Request) {
       );
     }
 
+    // Send payment confirmation email
+    if (userData?.email && registration.mun_events) {
+      const emailTemplate = emailTemplates.munPaymentUploaded(
+        userData.name,
+        registration.mun_events.name
+      );
+      
+      await sendEmail({
+        to: userData.email,
+        subject: emailTemplate.subject,
+        html: emailTemplate.html,
+      });
+    }
+
     return NextResponse.json({
       success: true,
       registration: updatedReg,
-      message: 'Payment proof uploaded successfully!',
+      message: 'Payment proof uploaded successfully! Check your email for confirmation.',
     });
   } catch (err) {
     console.error('Unexpected error:', err);

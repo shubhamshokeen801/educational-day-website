@@ -14,7 +14,6 @@ const navItems: { href: string; title: string; highlight?: boolean }[] = [
   { href: "/#schedule", title: "Schedule" },
   { href: "/#events", title: "Events" },
   { href: "/#mun", title: "MUN" },
-  { href: "/#schedule", title: "Coordinators" },
   { href: "/#faq", title: "FAQ" },
 ];
 

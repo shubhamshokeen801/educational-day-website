@@ -114,7 +114,7 @@ export async function GET() {
 export async function PATCH(request: Request) {
   const supabase = await createServerClientInstance();
   const body = await request.json();
-  const { id, payment_verification, status } = body;
+  const { id, payment_verification, status, send_email } = body;
 
   if (!id) {
     return NextResponse.json({ error: 'Registration ID required' }, { status: 400 });
@@ -125,16 +125,70 @@ export async function PATCH(request: Request) {
   if (status !== undefined) updateData.status = status;
 
   const { data, error } = await supabase
-    .from('registration')
-    .update(updateData)
-    .eq('id', id)
-    .select()
-    .single();
+  .from('registration')
+  .update(updateData)
+  .eq('id', id)
+  .select(`
+    *,
+    users:user_id (name, email),
+    teams:team_id (
+      team_name,
+      team_members (
+        role,
+        users (name, email)
+      )
+    ),
+    events:event_id (name),
+    mun_events:mun_event_id (name)
+  `)
+  .single();
 
   if (error) {
     console.error('Update error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  // Send email if requested and payment verification is approved
+if (send_email && payment_verification === 'verified') {
+  try {
+    let recipientEmail = '';
+    let recipientName = '';
+    
+    if (data.team_id) {
+      // For team registrations, find the leader's email
+      const leader = data.teams?.team_members?.find((tm: any) => tm.role === 'leader');
+      recipientEmail = leader?.users?.email || '';
+      recipientName = leader?.users?.name || 'Team Leader';
+    } else {
+      // For solo registrations
+      recipientEmail = data.users?.email || '';
+      recipientName = data.users?.name || '';
+    }
+
+    const eventName = data.events?.name || data.mun_events?.name || 'Event';
+    const isTeam = !!data.team_id;
+    const teamName = data.teams?.team_name;
+
+    if (recipientEmail) {
+      const { sendEmail, emailTemplates } = await import('@/app/lib/emailService');
+      const emailContent = emailTemplates.paymentVerified(
+        recipientName, 
+        eventName, 
+        isTeam, 
+        teamName
+      );
+      
+      await sendEmail({
+        to: recipientEmail,
+        subject: emailContent.subject,
+        html: emailContent.html,
+      });
+    }
+  } catch (emailError) {
+    console.error('Email sending failed:', emailError);
+    // Don't fail the update if email fails
+  }
+}
 
   return NextResponse.json(data);
 }
