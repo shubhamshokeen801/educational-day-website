@@ -1,6 +1,7 @@
 // app/api/events/payment/route.ts
 import { NextResponse } from 'next/server';
 import { createServerClientInstance } from '@/app/lib/supabaseServerClient';
+import { sendEmail, emailTemplates } from '@/app/lib/emailService';
 
 export async function POST(req: Request) {
   try {
@@ -160,6 +161,31 @@ export async function POST(req: Request) {
         { error: 'Failed to update registration' },
         { status: 500 }
       );
+    }
+
+    const { data: uploaderData } = await supabase
+      .from('users')
+      .select('name, email')
+      .eq('id', user.id)
+      .single();
+
+    if (uploaderData?.email) {
+      const eventName = registration.events?.name || 'the event';
+      const isTeam = !!registration.team_id;
+      const teamName = registration.teams?.team_name;
+      
+      const emailTemplate = emailTemplates.eventPaymentUploaded(
+        uploaderData.name,
+        eventName,
+        isTeam,
+        teamName
+      );
+      
+      await sendEmail({
+        to: uploaderData.email,
+        subject: emailTemplate.subject,
+        html: emailTemplate.html,
+      });
     }
 
     return NextResponse.json({

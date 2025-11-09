@@ -227,8 +227,8 @@ export const emailTemplates = {
   }),
 
   munRegistration: (
-    userName: string, 
-    eventName: string, 
+    userName: string,
+    eventName: string,
     registrationFee: number,
     instituteName: string,
     qualification: string,
@@ -388,9 +388,69 @@ export const emailTemplates = {
       </html>
     `,
   }),
+  // Add this after the munPaymentUploaded function
+
+  eventPaymentUploaded: (userName: string, eventName: string, isTeam: boolean = false, teamName?: string) => ({
+    subject: `Payment Proof Received - ${eventName}`,
+    html: `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #059669; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+        .button { display: inline-block; padding: 12px 24px; background-color: white; color: blue; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }
+        .success-box { background-color: #d1fae5; padding: 15px; border-left: 4px solid #059669; margin: 20px 0; border-radius: 4px; }
+        .info-box { background-color: #fef3c7; padding: 15px; border-left: 4px solid #f59e0b; margin: 20px 0; border-radius: 4px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Payment Proof Received</h1>
+        </div>
+        <div class="content">
+          <p>Hi <strong>${userName}</strong>,</p>
+          
+          <div class="success-box">
+            <p><strong>Payment proof uploaded successfully!</strong></p>
+            <p>We have received your payment proof for <strong>${eventName}</strong>.</p>
+            ${isTeam && teamName ? `<p>Team: <strong>"${teamName}"</strong></p>` : ''}
+          </div>
+          
+          <div class="info-box">
+            <p><strong>What's Next?</strong></p>
+            <ul>
+              <li>Our team will verify your payment within 24-48 hours</li>
+              <li>You'll receive a confirmation email once verified</li>
+              <li>Check your profile for real-time status updates</li>
+            </ul>
+          </div>
+          
+          <center>
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://tech-media-fest.vercel.app'}/profile" class="button">
+              View Registration Status
+            </a>
+          </center>
+          
+          <p>If you have any questions or concerns, please don't hesitate to reach out to our support team.</p>
+          
+          <p>Best regards,<br><strong>Tech Fest Event Team</strong></p>
+        </div>
+        <div class="footer">
+          <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `,
+  }),
   paymentVerified: (userName: string, eventName: string, isTeam: boolean = false, teamName?: string) => ({
-  subject: `Payment Verified - ${eventName}`,
-  html: `
+    subject: `Payment Verified - ${eventName}`,
+    html: `
     <!DOCTYPE html>
     <html>
     <head>
@@ -460,5 +520,5 @@ export const emailTemplates = {
     </body>
     </html>
   `,
-}),
+  }),
 };
