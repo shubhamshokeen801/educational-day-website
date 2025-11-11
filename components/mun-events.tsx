@@ -124,11 +124,12 @@ const MunSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            
+            <div className="border-red-400 border-2 rounded-lg inline-block px-4 py-2 mb-4">
+            <p className="text-red-600 text-xl font-bold">BVICAM MUN Events are Postponed.</p>
+            </div>
             <h2 className="text-3xl sm:text-4xl py-2 lg:text-5xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 bg-clip-text text-transparent mb-3 sm:mb-4">
               BVICAM MUN 2025
             </h2>
-          
 
             {/* Marquee Text */}
             <div className="relative overflow-hidden py-3 mb-6">
