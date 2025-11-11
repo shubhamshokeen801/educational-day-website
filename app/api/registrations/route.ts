@@ -192,3 +192,58 @@ if (send_email && payment_verification === 'verified') {
 
   return NextResponse.json(data);
 }
+
+// app/api/registrations/route.ts - Add this DELETE handler after the PATCH handler
+
+export async function DELETE(request: Request) {
+  const supabase = await createServerClientInstance();
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+
+  if (!id) {
+    return NextResponse.json({ error: 'Registration ID required' }, { status: 400 });
+  }
+
+  try {
+    // First, get the registration to check if it's a team registration
+    const { data: registration, error: fetchError } = await supabase
+      .from('registration')
+      .select('team_id')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) {
+      console.error('Fetch error:', fetchError);
+      return NextResponse.json({ error: fetchError.message }, { status: 500 });
+    }
+
+    if (registration.team_id) {
+      // Team registration - delete the team (cascade will handle the rest)
+      const { error: deleteError } = await supabase
+        .from('teams')
+        .delete()
+        .eq('id', registration.team_id);
+
+      if (deleteError) {
+        console.error('Team delete error:', deleteError);
+        return NextResponse.json({ error: deleteError.message }, { status: 500 });
+      }
+    } else {
+      // Solo registration - delete directly
+      const { error: deleteError } = await supabase
+        .from('registration')
+        .delete()
+        .eq('id', id);
+
+      if (deleteError) {
+        console.error('Registration delete error:', deleteError);
+        return NextResponse.json({ error: deleteError.message }, { status: 500 });
+      }
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Delete failed:', error);
+    return NextResponse.json({ error: 'Delete operation failed' }, { status: 500 });
+  }
+}

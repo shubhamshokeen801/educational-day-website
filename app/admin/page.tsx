@@ -10,6 +10,7 @@ import {
   ExternalLink,
   Users,
   UserCheck,
+  Trash2,
 } from "lucide-react";
 
 interface RegistrationRow {
@@ -64,6 +65,9 @@ export default function AdminDashboard() {
   const [modalImageUrl, setModalImageUrl] = useState("");
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [selectedTeamMembers, setSelectedTeamMembers] = useState<any[]>([]);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [registrationToDelete, setRegistrationToDelete] = useState<RegistrationRow | null>(null);
 
   const itemsPerPage = 10;
 
@@ -134,6 +138,37 @@ export default function AdminDashboard() {
   const openTeamModal = (members: any[]) => {
     setSelectedTeamMembers(members);
     setShowTeamModal(true);
+  };
+
+  const handleDeleteClick = (reg: RegistrationRow) => {
+    setRegistrationToDelete(reg);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!registrationToDelete) return;
+
+    setDeletingId(registrationToDelete.id);
+    try {
+      const res = await fetch(`/api/registrations?id=${registrationToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        // Remove from local state
+        setRegistrations((prev) => prev.filter((r) => r.id !== registrationToDelete.id));
+        setShowDeleteConfirm(false);
+        setRegistrationToDelete(null);
+      } else {
+        const error = await res.json();
+        console.error('Delete failed:', error);
+        alert('Failed to delete registration: ' + error.error);
+      }
+    } catch (error) {
+      console.error('Delete failed:', error);
+      alert('Failed to delete registration');
+    }
+    setDeletingId(null);
   };
 
   const isFreeEvent = (reg: RegistrationRow) => {
@@ -370,9 +405,6 @@ export default function AdminDashboard() {
               >
                 Total: <span className="font-bold">{registrations.length}</span>
               </button>
-              {/* <div className="px-4 py-2 bg-purple-50 border border-purple-300 rounded-lg text-sm font-medium text-purple-700">
-                With Referrals: <span className="font-bold">{referralCount}</span>
-              </div> */}
             </div>
           </div>
 
@@ -640,13 +672,14 @@ export default function AdminDashboard() {
                     Payment Verification
                   </th>
                   <th className="px-3 py-3 text-left font-semibold">Status</th>
+                  <th className="px-3 py-3 text-left font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
                     <td
-                      colSpan={17}
+                      colSpan={18}
                       className="px-4 py-8 text-center text-gray-500"
                     >
                       Loading...
@@ -655,7 +688,7 @@ export default function AdminDashboard() {
                 ) : paginatedData.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={17}
+                      colSpan={18}
                       className="px-4 py-8 text-center text-gray-500"
                     >
                       No registrations found
@@ -803,6 +836,16 @@ export default function AdminDashboard() {
                             <option value="verified">Verified</option>
                             <option value="rejected">Rejected</option>
                           </select>
+                        </td>
+                        <td className="px-3 py-3">
+                          <button
+                            onClick={() => handleDeleteClick(reg)}
+                            disabled={deletingId === reg.id}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Delete registration"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </td>
                       </tr>
                     );
@@ -955,6 +998,80 @@ export default function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && registrationToDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+          onClick={() => !deletingId && setShowDeleteConfirm(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-red-100 rounded-full">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Delete Registration
+              </h3>
+            </div>
+            
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to delete this registration?
+            </p>
+            
+            <div className="bg-gray-50 rounded-lg p-3 mb-6 space-y-1 text-sm">
+              <p>
+                <span className="font-medium">Name:</span>{" "}
+                {registrationToDelete.team_id
+                  ? registrationToDelete.team_members?.find((m) => m.role === "leader")?.name ||
+                    registrationToDelete.team_members?.[0]?.name
+                  : registrationToDelete.users?.name}
+              </p>
+              <p>
+                <span className="font-medium">Event:</span>{" "}
+                {registrationToDelete.events?.name}
+              </p>
+              {registrationToDelete.team_id && (
+                <p>
+                  <span className="font-medium">Team:</span>{" "}
+                  {registrationToDelete.teams?.team_name}
+                </p>
+              )}
+            </div>
+
+            {registrationToDelete.team_id && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                <p className="text-sm text-yellow-800">
+                  <strong>Warning:</strong> This is a team registration. Deleting it will also remove the entire team and all team members.
+                </p>
+              </div>
+            )}
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setRegistrationToDelete(null);
+                }}
+                disabled={deletingId !== null}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={deletingId !== null}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deletingId ? "Deleting..." : "Delete"}
+              </button>
             </div>
           </div>
         </div>
