@@ -290,7 +290,10 @@ export default function AdminDashboard() {
       const user = reg.users;
       const team = reg.teams;
       const members =
-        reg.team_members?.map((m) => `${m.name} (${m.email})`).join("; ") || "";
+        reg.team_members?.map((m) => {
+          const phone = m.phone_number ? ` | ${m.phone_number}` : "";
+          return `${m.name} (${m.email}${phone})`;
+        }).join("; ") || "";
       const participantName = reg.team_id
         ? reg.team_members?.find((m) => m.role === "leader")?.name ||
           reg.team_members?.[0]?.name ||
