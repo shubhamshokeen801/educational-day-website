@@ -10,7 +10,7 @@ export default function HomePage() {
   return (
     <>
       <Hero />
-      <MunEventsSection/>
+      {/* <MunEventsSection/> */}
       <EventCard />
       <EventSchedule />
       <FAQ/>

@@ -310,7 +310,7 @@ export default function EventSchedule() {
                     </motion.tr>
                   ))}
                 {/* MUN Schedule Section */}
-                <tr className="bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30">
+                {/* <tr className="bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30">
                   <td colSpan={3} className="px-6 py-4">
                       <p className="text-red-600">BVICAM MUN Events are Postponed</p>
                     <div className="flex items-center gap-3">
@@ -320,9 +320,9 @@ export default function EventSchedule() {
                       </span>
                     </div>
                   </td>
-                </tr>
+                </tr> */}
                 {/* Day 1 Heading */}
-                <tr className="bg-indigo-50 dark:bg-indigo-950/50">
+                {/* <tr className="bg-indigo-50 dark:bg-indigo-950/50">
                   <td colSpan={3} className="px-6 py-3">
                     <span className="text-base font-bold text-indigo-700 dark:text-indigo-300">
                       Day 1 - 12 November
@@ -376,9 +376,9 @@ export default function EventSchedule() {
                         )}
                       </td>
                     </motion.tr>
-                  ))}
+                  ))} */}
                 {/* Day 2 Heading */}
-                <tr className="bg-indigo-50 dark:bg-indigo-950/50">
+                {/* <tr className="bg-indigo-50 dark:bg-indigo-950/50">
                   <td colSpan={3} className="px-6 py-3">
                     <span className="text-base font-bold text-indigo-700 dark:text-indigo-300">
                       Day 2 - 13 November
@@ -438,7 +438,7 @@ export default function EventSchedule() {
                         )}
                       </td>
                     </motion.tr>
-                  ))}
+                  ))} */}
               </tbody>
             </table>
           </div>
