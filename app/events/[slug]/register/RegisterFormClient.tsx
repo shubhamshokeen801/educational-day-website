@@ -18,7 +18,14 @@ export default function RegisterFormClient({ event }: { event: any }) {
   const [mode, setMode] = useState<'solo' | 'team' | null>(null);
   const [teamName, setTeamName] = useState('');
   const [joinCode, setJoinCode] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+
+  // Separate phone-number state per form. Create Team and Join Team render
+  // simultaneously for team-only events, so sharing one variable across
+  // them meant typing in either field overwrote the other instantly.
+  const [soloPhoneNumber, setSoloPhoneNumber] = useState('');
+  const [createTeamPhoneNumber, setCreateTeamPhoneNumber] = useState('');
+  const [joinTeamPhoneNumber, setJoinTeamPhoneNumber] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
@@ -48,8 +55,8 @@ export default function RegisterFormClient({ event }: { event: any }) {
   };
 
   const handleSolo = async () => {
-    if (!phoneNumber.trim()) return showMessage('Please enter your phone number.');
-    if (!validatePhone(phoneNumber)) return showMessage('Please enter a valid 10-digit phone number.');
+    if (!soloPhoneNumber.trim()) return showMessage('Please enter your phone number.');
+    if (!validatePhone(soloPhoneNumber)) return showMessage('Please enter a valid 10-digit phone number.');
     
     try {
       setLoading(true);
@@ -58,7 +65,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           eventId: event.id,
-          phoneNumber: phoneNumber.replace(/\s/g, '')
+          phoneNumber: soloPhoneNumber.replace(/\s/g, '')
         }),
       });
 
@@ -83,8 +90,8 @@ export default function RegisterFormClient({ event }: { event: any }) {
 
   const handleCreateTeam = async () => {
     if (!teamName.trim()) return showMessage('Please enter a valid team name.');
-    if (!phoneNumber.trim()) return showMessage('Please enter your phone number.');
-    if (!validatePhone(phoneNumber)) return showMessage('Please enter a valid 10-digit phone number.');
+    if (!createTeamPhoneNumber.trim()) return showMessage('Please enter your phone number.');
+    if (!validatePhone(createTeamPhoneNumber)) return showMessage('Please enter a valid 10-digit phone number.');
     
     try {
       setLoading(true);
@@ -94,7 +101,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
         body: JSON.stringify({ 
           eventId: event.id, 
           teamName,
-          phoneNumber: phoneNumber.replace(/\s/g, '')
+          phoneNumber: createTeamPhoneNumber.replace(/\s/g, '')
         }),
       });
 
@@ -124,8 +131,8 @@ export default function RegisterFormClient({ event }: { event: any }) {
 
   const handleJoinTeam = async () => {
     if (!joinCode.trim()) return showMessage('Please enter a team code.');
-    if (!phoneNumber.trim()) return showMessage('Please enter your phone number.');
-    if (!validatePhone(phoneNumber)) return showMessage('Please enter a valid 10-digit phone number.');
+    if (!joinTeamPhoneNumber.trim()) return showMessage('Please enter your phone number.');
+    if (!validatePhone(joinTeamPhoneNumber)) return showMessage('Please enter a valid 10-digit phone number.');
     
     try {
       setLoading(true);
@@ -134,7 +141,7 @@ export default function RegisterFormClient({ event }: { event: any }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           teamCode: joinCode,
-          phoneNumber: phoneNumber.replace(/\s/g, '')
+          phoneNumber: joinTeamPhoneNumber.replace(/\s/g, '')
         }),
       });
 
@@ -294,8 +301,8 @@ export default function RegisterFormClient({ event }: { event: any }) {
                         <input  
                           type="tel"
                           placeholder="Enter 10-digit phone number"
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          value={soloPhoneNumber}
+                          onChange={(e) => setSoloPhoneNumber(e.target.value)}
                           maxLength={10}
                           className="w-full pl-10 border-2 border-indigo-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
                         />
@@ -433,8 +440,8 @@ export default function RegisterFormClient({ event }: { event: any }) {
                         <input
                           type="tel"
                           placeholder="Your phone number (10 digits)"
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          value={createTeamPhoneNumber}
+                          onChange={(e) => setCreateTeamPhoneNumber(e.target.value)}
                           maxLength={10}
                           className="w-full pl-12 sm:pl-14 border-2 border-purple-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-purple-200 focus:border-purple-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
                         />
@@ -488,8 +495,8 @@ export default function RegisterFormClient({ event }: { event: any }) {
                         <input
                           type="tel"
                           placeholder="Your phone number (10 digits)"
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          value={joinTeamPhoneNumber}
+                          onChange={(e) => setJoinTeamPhoneNumber(e.target.value)}
                           maxLength={10}
                           className="w-full pl-12 sm:pl-14 border-2 border-green-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-green-200 focus:border-green-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
                         />
@@ -537,8 +544,8 @@ export default function RegisterFormClient({ event }: { event: any }) {
                   <input
                     type="tel"
                     placeholder="Enter 10-digit phone number"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    value={soloPhoneNumber}
+                    onChange={(e) => setSoloPhoneNumber(e.target.value)}
                     maxLength={10}
                     className="w-full pl-10! border-2 border-indigo-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
                   />
