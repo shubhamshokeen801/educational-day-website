@@ -1,8 +1,9 @@
-// app/api/events/route.ts
+// app/api/admin/events/route.ts
 import { NextResponse } from 'next/server';
 import { createServerClientInstance } from '@/app/lib/supabaseServerClient';
+import { getCurrentSeasonId } from '@/app/lib/season';
 
-export async function GET() {
+export async function GET(request: Request) {
   const supabase = await createServerClientInstance();
 
   // Check if user is logged in 
@@ -19,10 +20,20 @@ export async function GET() {
     role = profile?.role || null;
   }
 
-  const { data, error } = await supabase
+  const { searchParams } = new URL(request.url);
+  const seasonParam = searchParams.get('season');
+  const seasonId = seasonParam === 'all' ? null : seasonParam || (await getCurrentSeasonId());
+
+  let query = supabase
     .from('events')
     .select('*')
     .order('start_date', { ascending: true });
+
+  if (seasonId) {
+    query = query.eq('season_id', seasonId);
+  }
+
+  const { data, error } = await query;
 
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });

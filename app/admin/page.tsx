@@ -11,6 +11,7 @@ import {
   Users,
   UserCheck,
   Trash2,
+  CalendarDays,
 } from "lucide-react";
 
 interface RegistrationRow {
@@ -21,6 +22,7 @@ interface RegistrationRow {
   registered_at: string;
   user_id: string | null;
   team_id: string | null;
+  season_id?: string;
   phone_number?: string;
   institute_name?: string;
   qualification?: string;
@@ -47,19 +49,29 @@ interface Event {
   type: "regular" | "mun";
 }
 
+interface Season {
+  id: string;
+  year: number;
+  label: string;
+  is_current: boolean;
+}
+
 export default function AdminDashboard() {
   const [registrations, setRegistrations] = useState<RegistrationRow[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
+  const [seasons, setSeasons] = useState<Season[]>([]);
+  // "current" is a sentinel meaning "let the API resolve current season" —
+  // avoids needing seasons loaded before we can make the first fetch.
+  const [selectedSeason, setSelectedSeason] = useState<string>("current");
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
   const [selectedReferrals, setSelectedReferrals] = useState<string[]>([]);
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "verified" | "pending"
-  >("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "verified" | "pending">("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [showEventDropdown, setShowEventDropdown] = useState(false);
   const [showReferralDropdown, setShowReferralDropdown] = useState(false);
+  const [showSeasonDropdown, setShowSeasonDropdown] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState("");
@@ -71,27 +83,47 @@ export default function AdminDashboard() {
 
   const itemsPerPage = 10;
 
+  // Fetch the seasons list once, on mount (independent of selectedSeason)
   useEffect(() => {
-    loadData();
+    fetch("/api/seasons")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.error) setSeasons(data);
+      })
+      .catch((err) => console.error("Failed to load seasons:", err));
   }, []);
 
-  const loadData = async () => {
+  // Re-fetch registrations/events whenever the season filter changes
+  useEffect(() => {
+    loadData();
+    // Reset pagination and event filter when switching seasons — an event
+    // selected in one season's dropdown may not exist in another's.
+    setCurrentPage(1);
+    setSelectedEvents([]);
+  }, [selectedSeason]);
+
+    const loadData = async () => {
     setLoading(true);
+    // "current" sentinel means "let the API default to current season" —
+    // omit the param entirely rather than sending the literal string,
+    // which would fail Supabase's .eq('season_id', ...) uuid comparison.
+    const seasonQuery = selectedSeason === "current" ? "" : `?season=${selectedSeason}`;
+
     const [regsRes, eventsRes] = await Promise.all([
-      fetch("/api/registrations"),
-      fetch("/api/events"),
+      fetch(`/api/registrations${seasonQuery}`),
+      fetch(`/api/admin/events${seasonQuery}`),
     ]);
 
     const regsData = await regsRes.json();
     const eventsData = await eventsRes.json();
 
     if (!regsData.error) setRegistrations(regsData);
-    if (!eventsData.error) setEvents(eventsData);
+    if (!eventsData.error) setEvents(eventsData.events || eventsData);
     setLoading(false);
   };
 
   // Extract unique referral names (memoized to avoid recalculation)
-  const uniqueReferrals = useMemo(() => {
+  /* const uniqueReferrals = useMemo(() => {
     const referrals = new Set<string>();
     registrations.forEach((reg) => {
       if (reg.referral_name && reg.referral_name.trim()) {
@@ -99,7 +131,7 @@ export default function AdminDashboard() {
       }
     });
     return Array.from(referrals).sort();
-  }, [registrations]);
+  }, [registrations]); */
 
   const updateStatus = async (
     id: string,
@@ -264,6 +296,17 @@ export default function AdminDashboard() {
     currentPage * itemsPerPage
   );
 
+  // Label shown on the season dropdown button
+  const selectedSeasonLabel = useMemo(() => {
+    if (selectedSeason === "current") {
+      const current = seasons.find((s) => s.is_current);
+      return current ? `${current.label} (Current)` : "Current Season";
+    }
+    if (selectedSeason === "all") return "All Seasons";
+    const match = seasons.find((s) => s.id === selectedSeason);
+    return match?.label || "Select Season";
+  }, [selectedSeason, seasons]);
+
   const downloadCSV = () => {
     const headers = [
       "#",
@@ -335,7 +378,7 @@ export default function AdminDashboard() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "registrations.csv";
+    a.download = `registrations-${selectedSeasonLabel.replace(/\s+/g, "-").toLowerCase()}.csv`;
     a.click();
   };
 
@@ -413,6 +456,76 @@ export default function AdminDashboard() {
 
           {/* Filters */}
           <div className="flex flex-col md:flex-row gap-4">
+            {/* Season Filter — placed first since it scopes everything else */}
+            <div className="relative">
+              <button
+                onClick={() => setShowSeasonDropdown(!showSeasonDropdown)}
+                className="px-4 py-2 border border-indigo-300 bg-indigo-50 rounded-lg hover:bg-indigo-100 flex items-center gap-2 min-w-[220px]"
+              >
+                <CalendarDays className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                <span className="flex-1 text-left text-sm text-indigo-700 truncate">
+                  {selectedSeasonLabel}
+                </span>
+                <ChevronRight
+                  className={`w-4 h-4 text-indigo-600 transition-transform flex-shrink-0 ${
+                    showSeasonDropdown ? "rotate-90" : ""
+                  }`}
+                />
+              </button>
+
+              {showSeasonDropdown && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowSeasonDropdown(false)}
+                  />
+                  <div className="absolute z-20 mt-1 w-64 bg-white border border-indigo-300 rounded-lg shadow-lg max-h-80 overflow-auto">
+                    <button
+                      onClick={() => {
+                        setSelectedSeason("current");
+                        setShowSeasonDropdown(false);
+                      }}
+                      className={`w-full px-3 py-2 text-sm text-left hover:bg-indigo-50 ${
+                        selectedSeason === "current" ? "bg-indigo-50 font-semibold" : ""
+                      }`}
+                    >
+                      Current Season
+                    </button>
+                    {seasons.map((season) => (
+                      <button
+                        key={season.id}
+                        onClick={() => {
+                          setSelectedSeason(season.id);
+                          setShowSeasonDropdown(false);
+                        }}
+                        className={`w-full px-3 py-2 text-sm text-left hover:bg-indigo-50 flex items-center justify-between ${
+                          selectedSeason === season.id ? "bg-indigo-50 font-semibold" : ""
+                        }`}
+                      >
+                        <span>{season.label}</span>
+                        {season.is_current && (
+                          <span className="text-xs text-green-600 font-medium">Current</span>
+                        )}
+                      </button>
+                    ))}
+                    <div className="border-t border-gray-200">
+                      <button
+                        onClick={() => {
+                          setSelectedSeason("all");
+                          setShowSeasonDropdown(false);
+                        }}
+                        className={`w-full px-3 py-2 text-sm text-left hover:bg-indigo-50 ${
+                          selectedSeason === "all" ? "bg-indigo-50 font-semibold" : ""
+                        }`}
+                      >
+                        All Seasons
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
             {/* Search */}
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -516,104 +629,6 @@ export default function AdminDashboard() {
                         </span>
                       </button>
                     ))}
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Referral Filter */}
-            <div className="relative">
-              <button
-                onClick={() => setShowReferralDropdown(!showReferralDropdown)}
-                className="px-4 py-2 border border-purple-300 bg-purple-50 rounded-lg hover:bg-purple-100 flex items-center gap-2 min-w-[200px]"
-              >
-                <UserCheck className="w-4 h-4 text-purple-600" />
-                <span className="flex-1 text-left text-sm text-purple-700">
-                  {selectedReferrals.length === 0
-                    ? "Filter by Referrals"
-                    : `${selectedReferrals.length} referrals`}
-                </span>
-                <ChevronRight
-                  className={`w-4 h-4 text-purple-600 transition-transform ${
-                    showReferralDropdown ? "rotate-90" : ""
-                  }`}
-                />
-              </button>
-
-              {showReferralDropdown && (
-                <>
-                  <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setShowReferralDropdown(false)}
-                  />
-                  <div className="absolute z-20 mt-1 w-64 bg-white border border-purple-300 rounded-lg shadow-lg max-h-80 overflow-auto">
-                    {selectedReferrals.length > 0 && (
-                      <div className="p-2 border-b bg-purple-50">
-                        <button
-                          onClick={() => {
-                            setSelectedReferrals([]);
-                            setCurrentPage(1);
-                          }}
-                          className="text-xs text-purple-600 hover:text-purple-700 flex items-center gap-1"
-                        >
-                          <X className="w-3 h-3" /> Clear all
-                        </button>
-                      </div>
-                    )}
-                    {uniqueReferrals.length === 0 ? (
-                      <div className="px-3 py-2 text-sm text-gray-500">
-                        No referrals found
-                      </div>
-                    ) : (
-                      uniqueReferrals.map((referral) => (
-                        <button
-                          key={referral}
-                          onClick={() => {
-                            setSelectedReferrals((prev) =>
-                              prev.includes(referral)
-                                ? prev.filter((r) => r !== referral)
-                                : [...prev, referral]
-                            );
-                            setCurrentPage(1);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-purple-50 text-left"
-                        >
-                          <div
-                            className={`w-4 h-4 border rounded flex items-center justify-center ${
-                              selectedReferrals.includes(referral)
-                                ? "bg-purple-600 border-purple-600"
-                                : "border-gray-300"
-                            }`}
-                          >
-                            {selectedReferrals.includes(referral) && (
-                              <svg
-                                className="w-3 h-3 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
-                            )}
-                          </div>
-                          <span className="flex-1 font-medium">{referral}</span>
-                          <span className="text-xs text-gray-500">
-                            (
-                            {
-                              registrations.filter(
-                                (r) => r.referral_name === referral
-                              ).length
-                            }
-                            )
-                          </span>
-                        </button>
-                      ))
-                    )}
                   </div>
                 </>
               )}

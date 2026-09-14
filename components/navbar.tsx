@@ -13,7 +13,7 @@ const navItems: { href: string; title: string; highlight?: boolean }[] = [
   { href: "/#home", title: "Home" },
   { href: "/#schedule", title: "Schedule" },
   { href: "/#events", title: "Events" },
-  { href: "/#mun", title: "MUN" },
+  /* { href: "/#mun", title: "MUN" }, */
   { href: "/#faq", title: "FAQ" },
 ];
 

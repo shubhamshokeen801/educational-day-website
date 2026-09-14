@@ -1,11 +1,19 @@
 // app/api/registrations/route.ts
 import { NextResponse } from 'next/server';
 import { createServerClientInstance } from '@/app/lib/supabaseServerClient';
+import { getCurrentSeasonId } from '@/app/lib/season';
 
-export async function GET() {
+export async function GET(request: Request) {
   const supabase = await createServerClientInstance();
 
-  const { data, error } = await supabase
+  // Accept an explicit ?season=<id> (used by the admin season selector);
+  // default to current season so the dashboard opens uncluttered.
+  // Pass ?season=all to bypass filtering entirely for cross-year reporting.
+  const { searchParams } = new URL(request.url);
+  const seasonParam = searchParams.get('season');
+  const seasonId = seasonParam === 'all' ? null : seasonParam || (await getCurrentSeasonId());
+
+  let query = supabase
     .from('registration')
     .select(`
       id,
@@ -21,6 +29,7 @@ export async function GET() {
       payment_proof_url,
       event_id,
       mun_event_id,
+      season_id,
       portfolio_preference_1,
       portfolio_preference_2,
       ip_category,
@@ -41,6 +50,12 @@ export async function GET() {
       mun_events:mun_event_id (name, registration_fee)
     `)
     .order('registered_at', { ascending: false });
+
+  if (seasonId) {
+    query = query.eq('season_id', seasonId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('Supabase error:', error);
@@ -86,6 +101,7 @@ export async function GET() {
       registered_at: item.registered_at,
       user_id: item.user_id,
       team_id: item.team_id,
+      season_id: item.season_id,
       phone_number: item.phone_number,
       institute_name: item.institute_name,
       qualification: item.qualification,
