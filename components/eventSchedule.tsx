@@ -191,7 +191,7 @@ export default function EventSchedule({ isComingSoon = true }: EventScheduleProp
               Event Timeline
             </span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 bg-clip-text text-transparent mb-3 sm:mb-4">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 bg-clip-text text-transparent mb-3 pb-2 sm:mb-4">
             {isComingSoon ? "Schedule Coming Soon" : "Event Schedule"}
           </h2>
           <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">

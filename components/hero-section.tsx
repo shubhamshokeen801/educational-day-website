@@ -73,7 +73,7 @@ export const Hero: React.FC = () => {
                   Event Dates
                 </p>
                 <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
-                  coming soon
+                  30th Sept & 1st Oct
                 </p>
               </div>
             </div>
