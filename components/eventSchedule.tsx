@@ -127,47 +127,55 @@ const staticEvents: StaticEvent[] = [
   // Tech Media Fest Events
   {
     id: "tech-1",
-    date: "12th Nov",
-    time: "9:00 AM",
-    activity: "Volleyball",
+    date: "30th Sept",
+    time: "10:00 AM",
+    activity: "Fandango- Group Dance",
     venue: "Ground",
     category: "Tech Fest",
   },
   {
     id: "tech-2",
-    date: "12th Nov",
-    time: "11:30 AM",
-    activity: "Rangmanch",
-    venue: "Auditorium",
+    date: "30th Sept",
+    time: "10:00 AM",
+    activity: "Code Avengers",
+    venue: "Learning Resource Lab",
     category: "Tech Fest",
   },
   {
     id: "tech-3",
-    date: "12th Nov",
-    time: "1:30 PM",
-    activity: "Code Avengers",
-    venue: "Computer Lab",
+    date: "30th Sept",
+    time: "10:00 AM",
+    activity: "Tote Tales – Tote Bag Painting Competition",
+    venue: "Ground",
     category: "Tech Fest",
   },
   {
     id: "tech-4",
-    date: "13th Nov",
+    date: "1st Oct",
     time: "10:00 AM",
-    activity: "Tug of War",
+    activity: "Rangmanch – Nukkad Natak",
     venue: "Ground",
     category: "Tech Fest",
   },
   {
     id: "tech-5",
-    date: "13th Nov",
-    time: "3:30 PM",
-    activity: "Fandango",
-    venue: "Auditorium",
+    date: "1st Oct",
+    time: "10:00 AM",
+    activity: "Battle Bytes",
+    venue: "Seminar Hall",
+    category: "Tech Fest",
+  },
+  {
+    id: "tech-6",
+    date: "1st Oct",
+    time: "10:00 AM",
+    activity: "HYROX Arena - No Limits No Excuses",
+    venue: "Basketball Court",
     category: "Tech Fest",
   },
 ];
 
-export default function EventSchedule({ isComingSoon = true }: EventScheduleProps) {
+export default function EventSchedule({ isComingSoon = false }: EventScheduleProps) {
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
 
   const munEvents = staticEvents.filter((e) => e.category === "MUN");
@@ -252,7 +260,7 @@ export default function EventSchedule({ isComingSoon = true }: EventScheduleProp
                   </thead>
                   <tbody className="bg-white dark:bg-neutral-900 divide-y divide-gray-200 dark:divide-gray-800">
                     {/* Tech Media Fest Section */}
-                    <tr className="bg-gradient-to-r from-pink-100 to-orange-100 dark:from-pink-900/30 dark:to-orange-900/30">
+                    {/* <tr className="bg-gradient-to-r from-pink-100 to-orange-100 dark:from-pink-900/30 dark:to-orange-900/30">
                       <td colSpan={3} className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <Trophy className="w-6 h-6 text-pink-600 dark:text-pink-400" />
@@ -261,17 +269,17 @@ export default function EventSchedule({ isComingSoon = true }: EventScheduleProp
                           </span>
                         </div>
                       </td>
-                    </tr>
+                    </tr> */}
                     {/* Day 1 Heading */}
                     <tr className="bg-pink-50 dark:bg-pink-950/50">
                       <td colSpan={3} className="px-6 py-3">
                         <span className="text-base font-bold text-pink-700 dark:text-pink-300">
-                          Day 1 - 12 November
+                          Day 1 - 30 September
                         </span>
                       </td>
                     </tr>
                     {techEvents
-                      .filter((e) => e.date === "12th Nov")
+                      .filter((e) => e.date === "30th Sept")
                       .map((event, i) => (
                         <motion.tr
                           key={event.id}
@@ -304,12 +312,12 @@ export default function EventSchedule({ isComingSoon = true }: EventScheduleProp
                     <tr className="bg-pink-50 dark:bg-pink-950/50">
                       <td colSpan={3} className="px-6 py-3">
                         <span className="text-base font-bold text-pink-700 dark:text-pink-300">
-                          Day 2 - 13 November
+                          Day 2 - 1 October
                         </span>
                       </td>
                     </tr>
                     {techEvents
-                      .filter((e) => e.date === "13th Nov")
+                      .filter((e) => e.date === "1st Oct")
                       .map((event, i) => (
                         <motion.tr
                           key={event.id}
