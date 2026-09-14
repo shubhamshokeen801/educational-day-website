@@ -21,6 +21,7 @@ interface Event {
   slug?: string;
   is_paid: boolean;
   registration_fee: number | null;
+  season_id?: string;
 }
 
 // Helper function to create URL-friendly slug
@@ -41,20 +42,37 @@ export default function EventCard() {
 
   useEffect(() => {
     async function fetchEvents() {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        /* .order("start_date", { ascending: true }); */
+      try {
+        // Resolve current season first — client components can't call the
+        // server-only getCurrentSeasonId() helper, so we hit a tiny API for it.
+        const seasonRes = await fetch('/api/season/current');
+        const seasonData = await seasonRes.json();
 
-      if (error) setError(error.message);
-      else {
-        const filtered = (data || []).filter(
-          (e: Event) => !e.is_mun_event || e.is_mun_event === "false"
-        );
-        setEvents(filtered);
+        if (!seasonRes.ok) {
+          setError(seasonData.error || 'Failed to resolve current season');
+          setLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from("events")
+          .select("*")
+          .eq("season_id", seasonData.id);
+
+        if (error) {
+          setError(error.message);
+        } else {
+          const filtered = (data || []).filter(
+            (e: Event) => !e.is_mun_event || e.is_mun_event === "false"
+          );
+          setEvents(filtered);
+        }
+      } catch (err) {
+        setError('Failed to load events');
+        console.error('Error fetching events:', err);
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     }
 
     fetchEvents();

@@ -1,6 +1,7 @@
 // app/api/profile/route.ts
 import { NextResponse } from 'next/server';
 import { createServerClientInstance } from '@/app/lib/supabaseServerClient';
+import { getCurrentSeasonId } from '@/app/lib/season';
 
 export async function GET() {
   try {
@@ -12,7 +13,11 @@ export async function GET() {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
+    const seasonId = await getCurrentSeasonId();
+
     // SOLO REGISTRATIONS (excluding MUN events and team events)
+    // Scoped to current season only — past registrations stay in the DB
+    // but are no longer surfaced here, per the simplified profile UX.
     const { data: soloRegs, error: soloError } = await supabase
       .from('registration')
       .select(`
@@ -28,6 +33,7 @@ export async function GET() {
         )
       `)
       .eq('user_id', user.id)
+      .eq('season_id', seasonId)
       .is('team_id', null)
       .is('mun_event_id', null)
       .order('registered_at', { ascending: false });
@@ -35,6 +41,8 @@ export async function GET() {
     if (soloError) console.error('Error fetching solo registrations:', soloError);
 
     // TEAM MEMBERSHIPS
+    // team_members itself has no season_id (see earlier decision), so we
+    // filter via the joined teams.season_id after the fetch.
     const { data: teamMembers, error: teamError } = await supabase
       .from('team_members')
       .select(`
@@ -45,6 +53,7 @@ export async function GET() {
           team_code,
           event_id,
           created_by,
+          season_id,
           events (
             id,
             name,
@@ -60,11 +69,16 @@ export async function GET() {
 
     if (teamError) console.error('Error fetching team memberships:', teamError);
 
+    // Keep only memberships whose team belongs to the current season
+    const currentSeasonTeamMembers = (teamMembers || []).filter(
+      (tm: any) => tm.teams?.season_id === seasonId
+    );
+
     // Get members + registration per team
     let teamsWithMembers: any[] = [];
-    if (teamMembers && teamMembers.length > 0) {
+    if (currentSeasonTeamMembers.length > 0) {
       teamsWithMembers = await Promise.all(
-        teamMembers.map(async (tm: any) => {
+        currentSeasonTeamMembers.map(async (tm: any) => {
           const { data: allMembers } = await supabase
             .from('team_members')
             .select(`
@@ -93,6 +107,8 @@ export async function GET() {
     }
 
     // MUN REGISTRATIONS (only MUN events)
+    // Also scoped to current season for consistency, even though MUN isn't
+    // running this year — keeps this endpoint correct once MUN resumes.
     const { data: munRegistrations, error: munError } = await supabase
       .from('registration')
       .select(`
@@ -107,6 +123,7 @@ export async function GET() {
         )
       `)
       .eq('user_id', user.id)
+      .eq('season_id', seasonId)
       .not('mun_event_id', 'is', null)
       .order('registered_at', { ascending: false });
 

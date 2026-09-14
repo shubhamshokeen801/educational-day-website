@@ -1,18 +1,22 @@
 import { NextResponse } from 'next/server';
 import { createServerClientInstance } from '@/app/lib/supabaseServerClient';
+import { getCurrentSeasonId } from '@/app/lib/season';
 
 export async function GET() {
   const supabase = await createServerClientInstance();
+  const seasonId = await getCurrentSeasonId();
 
-  // Fetch both regular events and MUN events
+  // Fetch both regular events and MUN events, scoped to the current season
   const [regularEvents, munEvents] = await Promise.all([
     supabase
       .from('events')
       .select('id, name')
+      .eq('season_id', seasonId)
       .order('name', { ascending: true }),
     supabase
       .from('mun_events')
       .select('id, name')
+      .eq('season_id', seasonId)
       .order('name', { ascending: true })
   ]);
 
