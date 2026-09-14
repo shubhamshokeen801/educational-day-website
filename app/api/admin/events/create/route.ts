@@ -1,6 +1,7 @@
 // app/api/admin/events/create/route.ts
 import { NextResponse } from 'next/server';
 import { createServerClientInstance } from '@/app/lib/supabaseServerClient';
+import { getCurrentSeasonId } from '@/app/lib/season';
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -42,6 +43,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Access denied. Admins only.' }, { status: 403 });
   }
 
+  // Resolve current season — every new event is tagged to it
+  const seasonId = await getCurrentSeasonId();
+
   // Create event
   const { data, error } = await supabase
     .from('events')
@@ -53,6 +57,7 @@ export async function POST(req: Request) {
       min_team_size,
       start_date,
       end_date,
+      season_id: seasonId,
     })
     .select()
     .single();

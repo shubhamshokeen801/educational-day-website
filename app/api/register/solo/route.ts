@@ -112,7 +112,9 @@ export async function POST(req: Request) {
     const paymentStatus = event.is_paid ? 'pending' : 'verified';
     const registrationStatus = event.is_paid ? 'pending' : 'verified';
 
-    // Insert new solo registration
+    // Insert new solo registration — season_id is inherited from the event,
+    // not re-resolved from "current", so registrations always stay consistent
+    // with whichever season the event itself belongs to.
     const { data: reg, error: regError } = await supabase
       .from('registration')
       .insert({
@@ -122,6 +124,7 @@ export async function POST(req: Request) {
         payment_status: paymentStatus,
         status: registrationStatus,
         registered_at: new Date().toISOString(),
+        season_id: event.season_id,
       })
       .select()
       .single();

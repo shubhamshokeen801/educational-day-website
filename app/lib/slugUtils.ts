@@ -14,14 +14,25 @@ export function generateSlug(text: string): string {
 }
 
 /**
- * Find an event by slug from a list of events
- * @param events - Array of events with name property
+ * Find an event by slug from a list of events.
+ * If `seasonId` is provided, only events matching that season are eligible —
+ * this is what prevents two events sharing a name across different years
+ * from colliding on the same slug. Pass the events pre-fetched for the
+ * relevant season (or unfiltered + seasonId, either works since this only
+ * filters, it doesn't fetch).
+ * @param events - Array of events with name (and optionally season_id) property
  * @param slug - The slug to match
+ * @param seasonId - Optional season id to restrict the match to
  * @returns The matching event or undefined
  */
-export function findEventBySlug<T extends { name: string }>(
+export function findEventBySlug<T extends { name: string; season_id?: string }>(
   events: T[],
-  slug: string
+  slug: string,
+  seasonId?: string
 ): T | undefined {
-  return events.find(event => generateSlug(event.name) === slug);
+  const pool = seasonId
+    ? events.filter(event => event.season_id === seasonId)
+    : events;
+
+  return pool.find(event => generateSlug(event.name) === slug);
 }

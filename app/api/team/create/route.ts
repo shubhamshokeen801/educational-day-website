@@ -146,14 +146,16 @@ export async function POST(req: Request) {
       teamCode = generateTeamCode();
     }
 
-    // Create team
+    // Create team — inherits season_id from the event, not "current",
+    // so it can never drift out of sync with the event it belongs to.
     const { data: team, error: teamErr } = await supabase
       .from('teams')
       .insert({
         event_id: eventId,
         team_name: teamName,
         team_code: teamCode,
-        created_by: user.id
+        created_by: user.id,
+        season_id: event.season_id, // inherit from event
       })
       .select()
       .single();
@@ -188,7 +190,8 @@ export async function POST(req: Request) {
     const paymentStatus = event.is_paid ? 'pending' : 'verified';
     const registrationStatus = event.is_paid ? 'pending' : 'verified';
 
-    // Create registration for the team (leader is responsible for payment)
+    // Create team — inherits season_id from the event, not "current",
+    // so it can never drift out of sync with the event it belongs to.
     const { data: reg, error: regErr } = await supabase
       .from('registration')
       .insert({
@@ -198,7 +201,8 @@ export async function POST(req: Request) {
         phone_number: phoneNumber,
         payment_status: paymentStatus,
         status: registrationStatus,
-        registered_at: new Date().toISOString()
+        registered_at: new Date().toISOString(),
+        season_id: event.season_id, // inherit from event
       })
       .select()
       .single();

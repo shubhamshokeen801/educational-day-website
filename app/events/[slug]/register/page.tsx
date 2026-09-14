@@ -1,4 +1,5 @@
 import { createServerClientInstance } from "@/app/lib/supabaseServerClient";
+import { getCurrentSeasonId } from "@/app/lib/season";
 import RegisterFormClient from "./RegisterFormClient";
 import { Calendar, Users, User, XCircle, Info, Sparkles, DollarSign,IndianRupee } from "lucide-react";
 // Helper function to create URL-friendly slug from name
@@ -16,11 +17,15 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
   const { slug } = await params;
   
   const supabase = await createServerClientInstance();
+  const seasonId = await getCurrentSeasonId();
 
-  // Fetch all events and find the matching one by generated slug
+  // Fetch only current-season events, then match by generated slug.
+  // Scoping by season here — not after fetching all events — is what
+  // prevents a same-named event from a past season being resolved instead.
   const { data: allEvents, error: fetchError } = await supabase
     .from("events")
-    .select("*");
+    .select("*")
+    .eq("season_id", seasonId);
 
   if (fetchError) {
     console.error("Error fetching events:", fetchError);
