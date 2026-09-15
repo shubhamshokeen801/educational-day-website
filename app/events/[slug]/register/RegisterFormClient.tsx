@@ -1,6 +1,7 @@
+// app/events/[slug]/register/RegisterFormClient.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/app/lib/supabaseClient';
 import { Users, User, Plus, LogIn, Calendar, Award, Phone, Loader2, Info } from 'lucide-react';
@@ -11,7 +12,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
   const router = useRouter();
   const supabase = createClient();
 
-  // Determine if this is a team event based on min_team_size
   const isTeamEvent = event.is_team_event || (event.min_team_size && event.min_team_size > 1);
   const isSoloAllowed = !event.min_team_size || event.min_team_size <= 1;
 
@@ -19,9 +19,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
   const [teamName, setTeamName] = useState('');
   const [joinCode, setJoinCode] = useState('');
 
-  // Separate phone-number state per form. Create Team and Join Team render
-  // simultaneously for team-only events, so sharing one variable across
-  // them meant typing in either field overwrote the other instantly.
   const [soloPhoneNumber, setSoloPhoneNumber] = useState('');
   const [createTeamPhoneNumber, setCreateTeamPhoneNumber] = useState('');
   const [joinTeamPhoneNumber, setJoinTeamPhoneNumber] = useState('');
@@ -31,6 +28,33 @@ export default function RegisterFormClient({ event }: { event: any }) {
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   const [generatedTeamCode, setGeneratedTeamCode] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
+
+  // Single auth resolution point for this whole form — both RegisterAuthButton
+  // instances (Create Team + Join Team) read from this instead of each
+  // firing their own getUser() call.
+  const [user, setUser] = useState<any>(null);
+  const [userLoading, setUserLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    supabase.auth.getUser().then(({ data }) => {
+      if (mounted) {
+        setUser(data?.user ?? null);
+        setUserLoading(false);
+      }
+    });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') setUser(session?.user ?? null);
+      else if (event === 'SIGNED_OUT') setUser(null);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   const showMessage = (text: string, type: 'error' | 'success' = 'error') => {
     setMessage({ text, type });
@@ -74,7 +98,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
 
       toast.success('Solo registration successful!');
       
-      // Redirect based on whether payment is required
       if (data.requiresPayment) {
         setRedirecting(true);
         router.push(`/payment?reg=${data.registration.id}&type=regular`);
@@ -111,12 +134,9 @@ export default function RegisterFormClient({ event }: { event: any }) {
       setGeneratedTeamCode(data.team.team_code);
       toast.success('Team created successfully!');
       
-      // Redirect based on whether payment is required
       if (data.requiresPayment) {
-        // Give user 5 seconds to copy the code before showing redirect overlay
         setTimeout(() => {
           setRedirecting(true);
-          // Then redirect after another 2 seconds
           setTimeout(() => {
             router.push(`/payment?reg=${data.registration.id}&type=regular`);
           }, 1500);
@@ -159,7 +179,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-      {/* Redirecting Overlay - Only shows when redirecting is true */}
       {redirecting && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
@@ -176,7 +195,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
         </div>
       )}
 
-      {/* Header Section */}
       <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 mb-6 sm:mb-8 text-white">
         <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
           <div className="bg-white/20 backdrop-blur-sm p-2 sm:p-3 rounded-xl">
@@ -193,12 +211,10 @@ export default function RegisterFormClient({ event }: { event: any }) {
         </div>
       </div>
 
-      {/* Main Registration Card */}
       <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
         
         {isTeamEvent ? (
           <>
-            {/* Mode Selection - Only show if solo is allowed */}
             {isSoloAllowed && (
               <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 sm:p-6 border-b border-gray-200">
               <h4 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Choose Registration Type</h4>
@@ -258,7 +274,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
             </div>
             )}
 
-            {/* Team Size Info Banner */}
             {event.min_team_size && event.min_team_size > 1 && (
               <div className="bg-blue-50 border-b border-blue-200 p-4">
                 <div className="flex items-center gap-2 text-blue-800">
@@ -271,7 +286,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
               </div>
             )}
 
-            {/* Content Area */}
             <div className="p-4 sm:p-8">
               {!mode && isSoloAllowed && (
                 <div className="text-center py-8 sm:py-12">
@@ -280,7 +294,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
                 </div>
               )}
 
-              {/* SOLO MODE */}
               {mode === 'solo' && isSoloAllowed && (
                 <div className="animate-fadeIn">
                   <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl sm:rounded-2xl p-6 sm:p-8 mb-4 sm:mb-6">
@@ -289,7 +302,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
                       Register as a solo participant and showcase your individual skills
                     </p>
                     
-                    {/* Phone Number Input */}
                     <div className="mb-4">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Phone Number <span className="text-red-500">*</span>
@@ -313,13 +325,13 @@ export default function RegisterFormClient({ event }: { event: any }) {
                       eventId={event.id}
                       onProceed={handleSolo}
                       buttonType="solo"
-                      loading={loading}
+                      loading={loading || userLoading}
+                      user={user}
                     />
                   </div>
                 </div>
               )}
 
-              {/* TEAM MODE */}
               {(mode === 'team' || !isSoloAllowed) && (
                 <div className="animate-fadeIn space-y-4 sm:space-y-6">
                   {!isSoloAllowed && !generatedTeamCode && (
@@ -336,7 +348,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
                     </div>
                   )}
 
-                  {/* Team Code Success Display */}
                   {generatedTeamCode && (
                     <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl sm:rounded-2xl p-6 sm:p-8 border-2 border-green-200">
                       <div className="text-center">
@@ -352,7 +363,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
                           Share this code with your team members to let them join
                         </p>
                         
-                        {/* Team Code Display */}
                         <div className="bg-white rounded-xl p-4 sm:p-6 mb-4 border-2 border-green-300">
                           <p className="text-sm text-gray-600 mb-2">Your Team Code:</p>
                           <div className="flex items-center justify-center gap-3">
@@ -362,7 +372,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
                           </div>
                         </div>
 
-                        {/* Copy Button */}
                         <button
                           onClick={copyToClipboard}
                           className="w-full bg-green-600 hover:bg-green-700 text-white py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 mb-4 flex items-center justify-center gap-2"
@@ -384,7 +393,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
                           )}
                         </button>
 
-                        {/* Disclaimer about accessing code from profile */}
                         <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-4">
                           <div className="flex items-start gap-3">
                             <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -394,7 +402,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
                           </div>
                         </div>
 
-                        {/* it will auto redirect if paid event */}
                         {!event.is_paid ? (
                           <button
                             onClick={() => router.push('/profile')}
@@ -411,7 +418,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
                     </div>
                   )}
 
-                  {/* Create Team Form */}
                   {!generatedTeamCode && (
                     <>
                       <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl sm:rounded-2xl p-5 sm:p-7 border-2 border-purple-100">
@@ -453,12 +459,12 @@ export default function RegisterFormClient({ event }: { event: any }) {
                         eventId={event.id}
                         onProceed={handleCreateTeam}
                         buttonType="create-team"
-                        loading={loading}
+                        loading={loading || userLoading}
+                        user={user}
                       />
                     </div>
                   </div>
 
-                  {/* Divider */}
                   <div className="relative">
                     <div className="absolute inset-0 flex items-center">
                       <div className="w-full border-t-2 border-gray-200"></div>
@@ -468,7 +474,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
                     </div>
                   </div>
 
-                  {/* Join Team */}
                   <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl sm:rounded-2xl p-5 sm:p-7 border-2 border-green-100">
                     <div className="flex items-center gap-3 mb-4 sm:mb-5">
                       <div className="bg-green-500 p-2 sm:p-2.5 rounded-xl">
@@ -508,7 +513,8 @@ export default function RegisterFormClient({ event }: { event: any }) {
                         eventId={event.id}
                         onProceed={handleJoinTeam}
                         buttonType="join-team"
-                        loading={loading}
+                        loading={loading || userLoading}
+                        user={user}
                       />
                     </div>
                   </div>
@@ -519,7 +525,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
             </div>
           </>
         ) : (
-          // SOLO-ONLY EVENT
           <div className="p-6 sm:p-8">
             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl sm:rounded-2xl p-6 sm:p-8">
               <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
@@ -532,7 +537,6 @@ export default function RegisterFormClient({ event }: { event: any }) {
                 </div>
               </div>
               
-              {/* Phone Number Input */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Phone Number <span className="text-red-500">*</span>
@@ -556,14 +560,14 @@ export default function RegisterFormClient({ event }: { event: any }) {
                 eventId={event.id}
                 onProceed={handleSolo}
                 buttonType="solo"
-                loading={loading}
+                loading={loading || userLoading}
+                user={user}
               />
             </div>
           </div>
         )}
       </div>
 
-      {/* Message feedback */}
       {message && (
         <div className={`mt-4 sm:mt-6 p-4 sm:p-5 rounded-xl sm:rounded-2xl shadow-lg animate-slideIn ${
           message.type === 'error' 
