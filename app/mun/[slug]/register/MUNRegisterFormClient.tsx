@@ -1,7 +1,7 @@
 // app/mun/[slug]/register/MUNRegisterFormClient.tsx
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/app/lib/supabaseClient';
 import { Phone, Building2, GraduationCap, Users, CheckCircle2, AlertCircle, UserPlus, FileText, Camera, Loader2 } from 'lucide-react';
@@ -40,6 +40,33 @@ export default function MUNRegisterFormClient({ munEvent }: MUNRegisterFormProps
   const [loading, setLoading] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
+
+  // Single auth resolution point for this form, same pattern as
+  // RegisterFormClient — RegisterAuthButton now requires `user` as a prop
+  // instead of self-fetching it.
+  const [user, setUser] = useState<any>(null);
+  const [userLoading, setUserLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    supabase.auth.getUser().then(({ data }) => {
+      if (mounted) {
+        setUser(data?.user ?? null);
+        setUserLoading(false);
+      }
+    });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') setUser(session?.user ?? null);
+      else if (event === 'SIGNED_OUT') setUser(null);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   const showMessage = (text: string, type: 'error' | 'success' = 'error') => {
     setMessage({ text, type });
@@ -356,8 +383,9 @@ export default function MUNRegisterFormClient({ munEvent }: MUNRegisterFormProps
               eventId={munEvent.id}
               onProceed={handleSubmit}
               buttonType="solo"
-              loading={loading}
+              loading={loading || userLoading}
               isMunEvent={true}
+              user={user}
             />
           </div>
 
