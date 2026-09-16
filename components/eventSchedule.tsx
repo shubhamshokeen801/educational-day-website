@@ -360,7 +360,7 @@ export default function EventSchedule({ isComingSoon = false }: EventSchedulePro
             {/* Mobile Card View */}
             <div className="lg:hidden space-y-8">
               {/* MUN Mobile Cards */}
-              <div>
+              {/* <div>
                 <div className="flex items-center gap-3 mb-6 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 p-4 rounded-xl">
                   <Users className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                   <h3 className="text-lg font-bold text-indigo-900 dark:text-indigo-100">
@@ -442,7 +442,7 @@ export default function EventSchedule({ isComingSoon = false }: EventSchedulePro
                     })}
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Tech Media Fest Mobile Cards */}
               <div>
