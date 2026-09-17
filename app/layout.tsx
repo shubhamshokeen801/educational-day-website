@@ -4,8 +4,8 @@ import { Navbar } from "@/components/navbar";
 import Footer from "@/components/footer";
 
 export const metadata = {
-  title: "Tech Media Fest 2025",
-  description: "Tech Media Fest 2025 and Model United Nations 2025",
+  title: "Tech Media Fest 2026",
+  description: "Tech Media Fest 2026",
 };
 
 export default function RootLayout({
