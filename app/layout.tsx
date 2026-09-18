@@ -4,8 +4,8 @@ import { Navbar } from "@/components/navbar";
 import Footer from "@/components/footer";
 
 export const metadata = {
-  title: "Tech Media Fest 2026",
-  description: "Tech Media Fest 2026",
+  title: "TechMedia Fest by BVICAM",
+  description: "TechMedia Fest by BVICAM — celebrating technology, innovation, and media.",
 };
 
 export default function RootLayout({

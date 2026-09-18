@@ -20,6 +20,7 @@ import {
   CheckCircle,
   XCircle,
   Clock,
+  MessageCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -263,6 +264,24 @@ export default function ProfilePage() {
     }
   };
 
+  // Renders a "Join WhatsApp Group" button for any event/team card that has
+  // a whatsapp_group_link set. Mirrors the button style used in
+  // RegisterFormClient's post-registration success screen.
+  const renderWhatsAppButton = (link?: string | null) => {
+    if (!link) return null;
+    return (
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 inline-flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl font-semibold text-xs sm:text-sm shadow-sm hover:shadow-md transition-all duration-200"
+      >
+        <MessageCircle className="w-4 h-4" />
+        Join WhatsApp Group
+      </a>
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -411,6 +430,7 @@ export default function ProfilePage() {
                       </div>
                     )}
                   </div>
+                  {renderWhatsAppButton(reg.mun_events?.whatsapp_group_link)}
                 </div>
               ))}
             </div>
@@ -477,6 +497,7 @@ export default function ProfilePage() {
                       </div>
                     )}
                   </div>
+                  {renderWhatsAppButton(reg.events?.whatsapp_group_link)}
                 </div>
               ))}
             </div>
@@ -613,6 +634,9 @@ export default function ProfilePage() {
                         ))}
                       </div>
                     </div>
+
+                    {/* WHATSAPP GROUP — shown to every team member, not just the leader */}
+                    {renderWhatsAppButton(tm.teams?.events?.whatsapp_group_link)}
                   </div>
                 );
               })}

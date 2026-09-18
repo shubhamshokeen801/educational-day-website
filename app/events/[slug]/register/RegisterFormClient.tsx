@@ -29,9 +29,10 @@ export default function RegisterFormClient({ event }: { event: any }) {
   const [generatedTeamCode, setGeneratedTeamCode] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
 
-  // Single auth resolution point for this whole form — both RegisterAuthButton
-  // instances (Create Team + Join Team) read from this instead of each
-  // firing their own getUser() call.
+  // Shown for free solo events that have a WhatsApp group link — pauses the
+  // auto-redirect-to-profile so the user has a chance to tap the link.
+  const [soloRegSuccess, setSoloRegSuccess] = useState(false);
+
   const [user, setUser] = useState<any>(null);
   const [userLoading, setUserLoading] = useState(true);
 
@@ -101,6 +102,9 @@ export default function RegisterFormClient({ event }: { event: any }) {
       if (data.requiresPayment) {
         setRedirecting(true);
         router.push(`/payment?reg=${data.registration.id}&type=regular`);
+      } else if (event.whatsapp_group_link) {
+        // Free event with a group link — pause here instead of auto-redirecting
+        setSoloRegSuccess(true);
       } else {
         setTimeout(() => router.push('/profile'), 1000);
       }
@@ -297,37 +301,66 @@ export default function RegisterFormClient({ event }: { event: any }) {
               {mode === 'solo' && isSoloAllowed && (
                 <div className="animate-fadeIn">
                   <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl sm:rounded-2xl p-6 sm:p-8 mb-4 sm:mb-6">
-                    <h4 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">Individual Participation</h4>
-                    <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
-                      Register as a solo participant and showcase your individual skills
-                    </p>
-                    
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Phone Number <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Phone className="h-5 w-5 text-gray-400" />
+                    {soloRegSuccess ? (
+                      <div className="text-center py-6">
+                        <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500 rounded-full mb-4">
+                          <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
                         </div>
-                        <input  
-                          type="tel"
-                          placeholder="Enter 10-digit phone number"
-                          value={soloPhoneNumber}
-                          onChange={(e) => setSoloPhoneNumber(e.target.value)}
-                          maxLength={10}
-                          className="w-full pl-10 border-2 border-indigo-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
-                        />
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Registration Successful!</h3>
+                        <p className="text-sm text-gray-600 mb-4">Join the event group to stay updated.</p>
+                        
+                        <a
+                          href={event.whatsapp_group_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold text-sm mb-3"
+                        >
+                          Join WhatsApp Group
+                        </a>
+                        <button
+                          onClick={() => router.push('/profile')}
+                          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-semibold text-sm"
+                        >
+                          Go to Profile
+                        </button>
                       </div>
-                    </div>
+                    ) : (
+                      <>
+                        <h4 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">Individual Participation</h4>
+                        <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
+                          Register as a solo participant and showcase your individual skills
+                        </p>
+                        
+                        <div className="mb-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Phone Number <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <Phone className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <input  
+                              type="tel"
+                              placeholder="Enter 10-digit phone number"
+                              value={soloPhoneNumber}
+                              onChange={(e) => setSoloPhoneNumber(e.target.value)}
+                              maxLength={10}
+                              className="w-full pl-10 border-2 border-indigo-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
+                            />
+                          </div>
+                        </div>
 
-                    <RegisterAuthButton 
-                      eventId={event.id}
-                      onProceed={handleSolo}
-                      buttonType="solo"
-                      loading={loading || userLoading}
-                      user={user}
-                    />
+                        <RegisterAuthButton 
+                          eventId={event.id}
+                          onProceed={handleSolo}
+                          buttonType="solo"
+                          loading={loading || userLoading}
+                          user={user}
+                        />
+                      </>
+                    )}
                   </div>
                 </div>
               )}
@@ -403,12 +436,24 @@ export default function RegisterFormClient({ event }: { event: any }) {
                         </div>
 
                         {!event.is_paid ? (
-                          <button
-                            onClick={() => router.push('/profile')}
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300"
-                          >
-                            Go to Profile
-                          </button>
+                          <>
+                            {event.whatsapp_group_link && (
+                              <a
+                                href={event.whatsapp_group_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300 mb-3"
+                              >
+                                Join WhatsApp Group
+                              </a>
+                            )}
+                            <button
+                              onClick={() => router.push('/profile')}
+                              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-300"
+                            >
+                              Go to Profile
+                            </button>
+                          </>
                         ) : (
                           <p className="text-sm text-gray-600 italic">
                             You will be redirected to payment page in a few seconds...
@@ -527,42 +572,71 @@ export default function RegisterFormClient({ event }: { event: any }) {
         ) : (
           <div className="p-6 sm:p-8">
             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl sm:rounded-2xl p-6 sm:p-8">
-              <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                <div className="bg-indigo-500 p-3 sm:p-4 rounded-xl sm:rounded-2xl">
-                  <User className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                </div>
-                <div>
-                  <h4 className="text-lg sm:text-xl font-bold text-gray-800">Solo Event Registration</h4>
-                  <p className="text-sm sm:text-base text-gray-600 mt-1">Individual participation only</p>
-                </div>
-              </div>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Phone className="h-5 w-5 text-gray-400" />
+              {soloRegSuccess ? (
+                <div className="text-center py-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500 rounded-full mb-4">
+                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
                   </div>
-                  <input
-                    type="tel"
-                    placeholder="Enter 10-digit phone number"
-                    value={soloPhoneNumber}
-                    onChange={(e) => setSoloPhoneNumber(e.target.value)}
-                    maxLength={10}
-                    className="w-full pl-10! border-2 border-indigo-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
-                  />
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Registration Successful!</h3>
+                  <p className="text-sm text-gray-600 mb-4">Join the event group to stay updated.</p>
+                  
+                  <a
+                    href={event.whatsapp_group_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold text-sm mb-3"
+                  >
+                    Join WhatsApp Group
+                  </a>
+                  <button
+                    onClick={() => router.push('/profile')}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-semibold text-sm"
+                  >
+                    Go to Profile
+                  </button>
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    <div className="bg-indigo-500 p-3 sm:p-4 rounded-xl sm:rounded-2xl">
+                      <User className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg sm:text-xl font-bold text-gray-800">Solo Event Registration</h4>
+                      <p className="text-sm sm:text-base text-gray-600 mt-1">Individual participation only</p>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Phone className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="tel"
+                        placeholder="Enter 10-digit phone number"
+                        value={soloPhoneNumber}
+                        onChange={(e) => setSoloPhoneNumber(e.target.value)}
+                        maxLength={10}
+                        className="w-full !pl-10 border-2 border-indigo-200 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 focus:ring-4 focus:ring-indigo-200 focus:border-indigo-400 focus:outline-none text-sm sm:text-base text-gray-900 bg-white transition-all"
+                      />
+                    </div>
+                  </div>
 
-              <RegisterAuthButton 
-                eventId={event.id}
-                onProceed={handleSolo}
-                buttonType="solo"
-                loading={loading || userLoading}
-                user={user}
-              />
+                  <RegisterAuthButton 
+                    eventId={event.id}
+                    onProceed={handleSolo}
+                    buttonType="solo"
+                    loading={loading || userLoading}
+                    user={user}
+                  />
+                </>
+              )}
             </div>
           </div>
         )}
@@ -606,11 +680,11 @@ export default function RegisterFormClient({ event }: { event: any }) {
         }
         
         .animate-fadeIn {
-          animation: fadeIn 0.4s ease-out;
+          animation: fadeIn 0.2s ease-out;
         }
         
         .animate-slideIn {
-          animation: slideIn 0.3s ease-out;
+          animation: slideIn 0.15s ease-out;
         }
       `}</style>
     </div>

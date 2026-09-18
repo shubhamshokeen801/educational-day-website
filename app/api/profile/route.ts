@@ -29,7 +29,8 @@ export async function GET() {
           start_date,
           is_team_event,
           registration_fee,
-          is_paid
+          is_paid,
+          whatsapp_group_link
         )
       `)
       .eq('user_id', user.id)
@@ -61,7 +62,8 @@ export async function GET() {
             start_date,
             is_team_event,
             registration_fee,
-            is_paid
+            is_paid,
+            whatsapp_group_link
           )
         )
       `)
@@ -119,7 +121,8 @@ export async function GET() {
           description,
           event_datetime,
           image_url,
-          registration_fee
+          registration_fee,
+          whatsapp_group_link
         )
       `)
       .eq('user_id', user.id)

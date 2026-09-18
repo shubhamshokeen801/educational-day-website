@@ -115,7 +115,7 @@ const Footer = () => {
               <div className="flex flex-row items-center justify-center gap-4 sm:gap-8">
                 <div className="flex items-center gap-3 text-sm sm:text-base text-gray-300">
                   <div className="bg-pink-500/20 p-2 rounded-lg">
-                  <Link href="https://www.instagram.com/ibvicam/">
+                  <Link href="https://www.instagram.com/tech_media_fest_2026/">
                     <Instagram className="w-4 h-4 sm:w-8 sm:h-8 text-pink-400" />
                     </Link>
                   </div>
