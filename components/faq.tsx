@@ -19,21 +19,26 @@ export const FAQ = () => {
     },
     {
       id: "2",
-      question: "Who can take part in the competition?",
-      answer: "Anyone! Whether you are an open college student, a school student, or a student of any other college, you are welcome to participate.",
+      question: "What if I have queries regarding an event?",
+      answer: "The coordinators for each event are listed in the event description. You can contact the respective coordinator for any event-related queries or assistance.",
     },
     {
       id: "3",
-      question: "What is the age requirement?",
-      answer: "Participants must be between 15 and 25 years old.",
+      question: "Who can take part in the competition?",
+      answer: "Students pursuing higher education from any college are welcome to participate, provided they carry a valid college ID card.",
     },
     {
       id: "4",
+      question: "Do I need to pay a fee to participate?",
+      answer: "All events are free to register for eligible participants.",
+    },
+    {
+      id: "5",
       question: "Do I need any special qualifications to join?",
       answer: "No special qualifications are required. All you need is enthusiasm and interest!",
     },
     {
-      id: "5",
+      id: "6",
       question: "How can I register for the competition?",
       answer: 'You can register by clicking on the "Register Now" button on our website and filling out the form.',
     },
@@ -76,7 +81,7 @@ export const FAQ = () => {
                 Frequently Asked Questions
               </h2>
               <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
-                Find answers to common questions about our Educational Day event. Still have questions? We're here to help!
+                Find answers to common questions about our Educational Day event. Still have questions? We&apos;re here to help!
               </p>
             </div>
 

@@ -1,7 +1,8 @@
 import { createServerClientInstance } from "@/app/lib/supabaseServerClient";
 import { getCurrentSeasonId } from "@/app/lib/season";
 import RegisterFormClient from "./RegisterFormClient";
-import { Calendar, Users, User, XCircle, Info, Sparkles, DollarSign,IndianRupee } from "lucide-react";
+import { Calendar, Users, User, XCircle, Info, Sparkles, DollarSign, IndianRupee, Trophy } from "lucide-react";
+import Link from "next/link";
 // Helper function to create URL-friendly slug from name
 function createSlug(name: string): string {
   return name
@@ -57,20 +58,29 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400 mb-3">Event Not Found</h2>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4">
-            The event "{slug}" doesn't exist or has been removed.
+            The event &quot;{slug}&quot; doesn&apos;t exist or has been removed.
           </p>
-          <a 
-            href="/#events" 
-            className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all"
-          >
+          <Link
+              href="/#events"
+              className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all"
+            >
             Browse Events
-          </a>
+          </Link>
         </div>
       </div>
     );
   }
 
   const startDate = new Date(event.event_datetime);
+
+  const prizePools: Record<string, string> = {
+  "Fandango": "₹25,000",
+  "Rangmanch": "₹20,000",
+  "CODE AVENGERS": "₹15,000",
+  "Tote Tales – Tote Bag Painting Competition": "₹15,000",
+  "HYROX ARENA": "₹15,000",
+  "Battle Bytes": "₹15,000",
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-purple-950 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
@@ -172,7 +182,33 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
                   </p>
                 </div>
               )}
+              {/* Prize Pool */}
+              {prizePools[event.name] && (
+                <div className="lg:col-start-3 bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 rounded-2xl p-4 sm:p-5 border border-yellow-100 dark:border-yellow-800">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="bg-yellow-500 p-2 sm:p-2.5 rounded-xl">
+                      <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    </div>
+
+                    <span className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">
+                      Prize Pool
+                    </span>
+                  </div>
+
+                  <p className="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-200">
+                    {prizePools[event.name]}
+                  </p>
+
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Total Prize Pool
+                  </p>
+                </div>
+              )}
             </div>
+
+            
+
+
 
             {/* Payment Notice for Paid Events */}
             {event.is_paid && (
