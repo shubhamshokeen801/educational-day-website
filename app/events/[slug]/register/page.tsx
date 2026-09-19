@@ -191,7 +191,7 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
                     </div>
 
                     <span className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">
-                      Prize Pool
+                      Prizes Worth
                     </span>
                   </div>
 
@@ -200,7 +200,7 @@ export default async function RegisterPage({ params }: { params: Promise<{ slug:
                   </p>
 
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Total Prize Pool
+                    Total Prizes Worth
                   </p>
                 </div>
               )}
