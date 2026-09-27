@@ -6,9 +6,7 @@ import { getCurrentSeasonId } from '@/app/lib/season';
 export async function GET(request: Request) {
   const supabase = await createServerClientInstance();
 
-  // Accept an explicit ?season=<id> (used by the admin season selector);
-  // default to current season so the dashboard opens uncluttered.
-  // Pass ?season=all to bypass filtering entirely for cross-year reporting.
+
   const { searchParams } = new URL(request.url);
   const seasonParam = searchParams.get('season');
   const seasonId = seasonParam === 'all' ? null : seasonParam || (await getCurrentSeasonId());
@@ -82,16 +80,16 @@ export async function GET(request: Request) {
     }
 
     // Determine event info (regular or MUN)
-    const eventInfo = item.events 
-      ? { 
-          name: Array.isArray(item.events) ? item.events[0]?.name : item.events?.name, 
-          is_paid: Array.isArray(item.events) ? item.events[0]?.is_paid : item.events?.is_paid,
-          registration_fee: Array.isArray(item.events) ? item.events[0]?.registration_fee : item.events?.registration_fee
-        }
-      : { 
-          name: Array.isArray(item.mun_events) ? item.mun_events[0]?.name : item.mun_events?.name,
-          registration_fee: Array.isArray(item.mun_events) ? item.mun_events[0]?.registration_fee : item.mun_events?.registration_fee
-        };
+    const eventInfo = item.events
+      ? {
+        name: Array.isArray(item.events) ? item.events[0]?.name : item.events?.name,
+        is_paid: Array.isArray(item.events) ? item.events[0]?.is_paid : item.events?.is_paid,
+        registration_fee: Array.isArray(item.events) ? item.events[0]?.registration_fee : item.events?.registration_fee
+      }
+      : {
+        name: Array.isArray(item.mun_events) ? item.mun_events[0]?.name : item.mun_events?.name,
+        registration_fee: Array.isArray(item.mun_events) ? item.mun_events[0]?.registration_fee : item.mun_events?.registration_fee
+      };
 
     return {
       id: item.id,
@@ -114,10 +112,10 @@ export async function GET(request: Request) {
       events: eventInfo,
       teams: team
         ? {
-            ...team,
-            team_members: undefined,
-            leader_email: leaderEmail,
-          }
+          ...team,
+          team_members: undefined,
+          leader_email: leaderEmail,
+        }
         : null,
       users: Array.isArray(item.users) ? item.users[0] : item.users,
       team_members: teamMembers,
@@ -129,6 +127,21 @@ export async function GET(request: Request) {
 
 export async function PATCH(request: Request) {
   const supabase = await createServerClientInstance();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+  }
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (!profile || profile.role !== 'admin') {
+    return NextResponse.json({ error: 'Access denied. Admins only.' }, { status: 403 });
+  }
   const body = await request.json();
   const { id, payment_verification, status, send_email } = body;
 
@@ -141,10 +154,10 @@ export async function PATCH(request: Request) {
   if (status !== undefined) updateData.status = status;
 
   const { data, error } = await supabase
-  .from('registration')
-  .update(updateData)
-  .eq('id', id)
-  .select(`
+    .from('registration')
+    .update(updateData)
+    .eq('id', id)
+    .select(`
     *,
     users:user_id (name, email),
     teams:team_id (
@@ -157,7 +170,7 @@ export async function PATCH(request: Request) {
     events:event_id (name),
     mun_events:mun_event_id (name)
   `)
-  .single();
+    .single();
 
   if (error) {
     console.error('Update error:', error);
@@ -165,46 +178,46 @@ export async function PATCH(request: Request) {
   }
 
   // Send email if requested and payment verification is approved
-if (send_email && payment_verification === 'verified') {
-  try {
-    let recipientEmail = '';
-    let recipientName = '';
-    
-    if (data.team_id) {
-      // For team registrations, find the leader's email
-      const leader = data.teams?.team_members?.find((tm: any) => tm.role === 'leader');
-      recipientEmail = leader?.users?.email || '';
-      recipientName = leader?.users?.name || 'Team Leader';
-    } else {
-      // For solo registrations
-      recipientEmail = data.users?.email || '';
-      recipientName = data.users?.name || '';
-    }
+  if (send_email && payment_verification === 'verified') {
+    try {
+      let recipientEmail = '';
+      let recipientName = '';
 
-    const eventName = data.events?.name || data.mun_events?.name || 'Event';
-    const isTeam = !!data.team_id;
-    const teamName = data.teams?.team_name;
+      if (data.team_id) {
+        // For team registrations, find the leader's email
+        const leader = data.teams?.team_members?.find((tm: any) => tm.role === 'leader');
+        recipientEmail = leader?.users?.email || '';
+        recipientName = leader?.users?.name || 'Team Leader';
+      } else {
+        // For solo registrations
+        recipientEmail = data.users?.email || '';
+        recipientName = data.users?.name || '';
+      }
 
-    if (recipientEmail) {
-      const { sendEmail, emailTemplates } = await import('@/app/lib/emailService');
-      const emailContent = emailTemplates.paymentVerified(
-        recipientName, 
-        eventName, 
-        isTeam, 
-        teamName
-      );
-      
-      await sendEmail({
-        to: recipientEmail,
-        subject: emailContent.subject,
-        html: emailContent.html,
-      });
+      const eventName = data.events?.name || data.mun_events?.name || 'Event';
+      const isTeam = !!data.team_id;
+      const teamName = data.teams?.team_name;
+
+      if (recipientEmail) {
+        const { sendEmail, emailTemplates } = await import('@/app/lib/emailService');
+        const emailContent = emailTemplates.paymentVerified(
+          recipientName,
+          eventName,
+          isTeam,
+          teamName
+        );
+
+        await sendEmail({
+          to: recipientEmail,
+          subject: emailContent.subject,
+          html: emailContent.html,
+        });
+      }
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      // Don't fail the update if email fails
     }
-  } catch (emailError) {
-    console.error('Email sending failed:', emailError);
-    // Don't fail the update if email fails
   }
-}
 
   return NextResponse.json(data);
 }
@@ -213,6 +226,21 @@ if (send_email && payment_verification === 'verified') {
 
 export async function DELETE(request: Request) {
   const supabase = await createServerClientInstance();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+  }
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (!profile || profile.role !== 'admin') {
+    return NextResponse.json({ error: 'Access denied. Admins only.' }, { status: 403 });
+  }
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
