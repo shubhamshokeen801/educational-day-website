@@ -63,11 +63,7 @@ export async function POST(req: Request) {
     }
 
     // Get team leader details
-    const { data: leaderData } = await supabase
-      .from('users')
-      .select('name')
-      .eq('id', team.created_by)
-      .single();
+    const { data: leaderName } = await supabase.rpc('team_leader_name', { p_team_id: team.id });
 
     // Get event data
     const { data: event, error: eventErr } = await supabase
@@ -153,39 +149,18 @@ export async function POST(req: Request) {
 
     // Check if team is full
     if (event.max_team_size) {
-      const { data: members, error: membersErr } = await supabase
-        .from('team_members')
-        .select('id')
-        .eq('team_id', team.id);
-
-      if (membersErr) {
-        return NextResponse.json(
-          { error: 'Error checking team size' }, 
-          { status: 500 }
-        );
-      }
-
-      if (members && members.length >= event.max_team_size) {
-        return NextResponse.json(
-          { error: 'Team is already full.' }, 
-          { status: 400 }
-        );
-      }
-    }
+  const { data: count, error: countErr } = await supabase.rpc('team_member_count', { p_team_id: team.id });
+  if (countErr) return NextResponse.json({ error: 'Error checking team size' }, { status: 500 });
+  if ((count ?? 0) >= event.max_team_size) {
+    return NextResponse.json({ error: 'Team is already full.' }, { status: 400 });
+  }
+}
 
     // Verify that the team has a registration (created by leader)
-    const { data: teamRegistration } = await supabase
-      .from('registration')
-      .select('*')
-      .eq('team_id', team.id)
-      .maybeSingle();
-
-    if (!teamRegistration) {
-      return NextResponse.json(
-        { error: 'Team registration not found. Please contact the team leader.' },
-        { status: 400 }
-      );
-    }
+    const { data: hasReg } = await supabase.rpc('team_has_registration', { p_team_id: team.id });
+if (!hasReg) {
+  return NextResponse.json({ error: 'Team registration not found. Please contact the team leader.' }, { status: 400 });
+}
 
     // Add member with phone number (NO separate registration - only join team_members)
     const { data: newMember, error: joinErr } = await supabase
@@ -213,7 +188,7 @@ export async function POST(req: Request) {
         userData.name,
         event.name,
         team.team_name,
-        leaderData?.name || 'Team Leader',
+        leaderName || 'Team Leader',
         event.is_paid
       );
       
