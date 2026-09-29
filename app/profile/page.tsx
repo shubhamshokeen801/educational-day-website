@@ -28,6 +28,9 @@ export default function ProfilePage() {
   const router = useRouter();
   const supabase = createClient();
 
+  const [editingPhone, setEditingPhone] = useState(false);
+  const [phoneInput, setPhoneInput] = useState("");
+  const [savingPhone, setSavingPhone] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [soloRegistrations, setSoloRegistrations] = useState<any[]>([]);
@@ -69,6 +72,32 @@ export default function ProfilePage() {
     }
   };
 
+  const handleUpdatePhone = async () => {
+    if (!/^[0-9]{10}$/.test(phoneInput)) {
+      toast.error("Please enter a valid 10-digit phone number");
+      return;
+    }
+    try {
+      setSavingPhone(true);
+      const res = await fetch("/api/profile/update-phone", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber: phoneInput }),
+      });
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data.error || "Failed to update phone number");
+
+      toast.success("Phone number updated successfully!");
+      setEditingPhone(false);
+      await loadProfile(); // refresh displayed data
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update phone number");
+    } finally {
+      setSavingPhone(false);
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/");
@@ -76,7 +105,7 @@ export default function ProfilePage() {
 
   const handlePaymentUpload = async (
     registrationId: string,
-    isMun: boolean = false
+    isMun: boolean = false,
   ) => {
     const input = document.createElement("input");
     input.type = "file";
@@ -88,9 +117,7 @@ export default function ProfilePage() {
 
       // Validate file size (5MB)
       if (file.size > 5 * 1024 * 1024) {
-        toast.warning(
-              `File size must be less than 5MB`
-            );
+        toast.warning(`File size must be less than 5MB`);
         /* alert("File size must be less than 5MB"); */
         return;
       }
@@ -104,9 +131,7 @@ export default function ProfilePage() {
       ];
       if (!allowedTypes.includes(file.type)) {
         /* alert("Only image files (JPEG, PNG, WebP) are allowed"); */
-        toast.warning(
-              `Only image files (JPEG, PNG, WebP) are allowed`
-            );
+        toast.warning(`Only image files (JPEG, PNG, WebP) are allowed`);
         return;
       }
 
@@ -136,18 +161,14 @@ export default function ProfilePage() {
         setUploadProgress({ ...uploadProgress, [registrationId]: 100 });
 
         /* alert(data.message || "Payment proof uploaded successfully!"); */
-        toast.success(
-              `Payment proof uploaded successfully!`
-            );
+        toast.success(`Payment proof uploaded successfully!`);
 
         // Reload profile to reflect updated payment status
         await loadProfile();
       } catch (error: any) {
         console.error("Error uploading payment:", error);
         /* alert(error.message || "Failed to upload payment proof"); */
-        toast.error(
-              `Failed to upload payment proof`
-            );
+        toast.error(`Failed to upload payment proof`);
       } finally {
         setUploadingFor(null);
         setUploadProgress({ ...uploadProgress, [registrationId]: 0 });
@@ -161,7 +182,7 @@ export default function ProfilePage() {
     status: string | null | undefined,
     registrationId?: string,
     isMun: boolean = false,
-    eventIsPaid: boolean = true
+    eventIsPaid: boolean = true,
   ) => {
     // Don't show anything for free events
     if (!eventIsPaid) {
@@ -342,6 +363,41 @@ export default function ProfilePage() {
                   <Mail className="w-4 h-4" />
                   <span className="text-sm">{user.email}</span>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  {editingPhone ? (
+                    <>
+                      <input
+                        type="tel"
+                        maxLength={10}
+                        value={phoneInput}
+                        onChange={(e) => setPhoneInput(e.target.value.replace(/\D/g, ''))}
+                        placeholder="10-digit phone number"
+                        className="border rounded px-2 py-1 text-sm w-40"
+                      />
+                      <button
+                        onClick={handleUpdatePhone}
+                        disabled={savingPhone}
+                        className="text-xs px-2 py-1 bg-indigo-600 text-white rounded disabled:opacity-50"
+                      >
+                        {savingPhone ? 'Saving...' : 'Save'}
+                      </button>
+                      <button onClick={() => setEditingPhone(false)} className="text-xs px-2 py-1 border rounded">
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-sm">{user.phone || 'No phone number on file'}</span>
+                      <button
+                        onClick={() => { setEditingPhone(true); setPhoneInput(''); }}
+                        className="text-xs text-indigo-600 hover:underline"
+                      >
+                        Edit
+                      </button>
+                    </>
+                  )}
+                </div>
                 {user.phone && (
                   <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4" />
@@ -402,7 +458,7 @@ export default function ProfilePage() {
                       reg.payment_status,
                       reg.id,
                       true,
-                      reg.mun_events?.is_paid
+                      reg.mun_events?.is_paid,
                     )}
                   </div>
                   {reg.mun_events?.description && (
@@ -461,7 +517,7 @@ export default function ProfilePage() {
                       reg.payment_status,
                       reg.id,
                       false,
-                      reg.events?.is_paid
+                      reg.events?.is_paid,
                     )}
                   </div>
                   {reg.events?.description && (
@@ -580,7 +636,7 @@ export default function ProfilePage() {
                           teamReg.payment_status,
                           teamReg.id,
                           false,
-                          tm.teams?.events?.is_paid
+                          tm.teams?.events?.is_paid,
                         )}
                       {!isLeader && (
                         <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 self-start">
@@ -636,7 +692,9 @@ export default function ProfilePage() {
                     </div>
 
                     {/* WHATSAPP GROUP — shown to every team member, not just the leader */}
-                    {renderWhatsAppButton(tm.teams?.events?.whatsapp_group_link)}
+                    {renderWhatsAppButton(
+                      tm.teams?.events?.whatsapp_group_link,
+                    )}
                   </div>
                 );
               })}
